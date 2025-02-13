@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "gl-matrix": "^3.4.3"
+  }
+}
