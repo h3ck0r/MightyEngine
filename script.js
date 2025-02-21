@@ -1,4 +1,5 @@
 import { mat4 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 async function setupCanvas() {
     const canvas = document.querySelector('canvas');
@@ -36,29 +37,45 @@ async function setup() {
     });
     return { device, context, canvas, canvasFormat };
 }
-async function cube() {
-    const vertices = new Float32Array([
-        // X, Y, Z       R, G, B
-        -0.5, -0.5, -0.5, 1.0, 0.0, 0.0,
-        0.5, -0.5, -0.5, 0.0, 1.0, 0.0,
-        0.5, 0.5, -0.5, 0.0, 0.0, 1.0,
-        -0.5, 0.5, -0.5, 1.0, 1.0, 0.0,
 
-        -0.5, -0.5, 0.5, 1.0, 0.0, 1.0,
-        0.5, -0.5, 0.5, 0.0, 1.0, 1.0,
-        0.5, 0.5, 0.5, 1.0, 1.0, 1.0,
-        -0.5, 0.5, 0.5, 0.0, 0.0, 0.0
-    ]);
-    const indices = new Uint16Array([
-        0, 1, 2, 2, 3, 0,  // Back face
-        4, 5, 6, 6, 7, 4,  // Front face
-        0, 4, 7, 7, 3, 0,  // Left face
-        1, 5, 6, 6, 2, 1,  // Right face
-        3, 2, 6, 6, 7, 3,  // Top face
-        0, 1, 5, 5, 4, 0   // Bottom face
-    ]);
-    return { vertices, indices };
+async function loadGLTFModel(url) {
+    return new Promise((resolve, reject) => {
+        const loader = new GLTFLoader();
+        loader.load(url, (gltf) => {
+            const vertices = [];
+            const indices = [];
+            let indexOffset = 0;
+
+            gltf.scene.traverse((child) => {
+                if (child.isMesh) {
+                    const position = child.geometry.attributes.position.array;
+                    const normal = child.geometry.attributes.normal ? child.geometry.attributes.normal.array : null;
+                    const uv = child.geometry.attributes.uv ? child.geometry.attributes.uv.array : null;
+                    const index = child.geometry.index ? child.geometry.index.array : null;
+
+                    for (let i = 0; i < position.length; i += 3) {
+                        vertices.push(
+                            position[i], position[i + 1], position[i + 2], 
+                            normal ? normal[i] : 0, normal ? normal[i + 1] : 0, normal ? normal[i + 2] : 1, 
+                            uv ? uv[i / 3 * 2] : 0, uv ? uv[i / 3 * 2 + 1] : 0
+                        );
+                    }
+
+                    if (index) {
+                        for (let i = 0; i < index.length; i++) {
+                            indices.push(index[i] + indexOffset);
+                        }
+                    }
+
+                    indexOffset += position.length / 3;
+                }
+            });
+
+            resolve({ vertices: new Float32Array(vertices), indices: new Uint32Array(indices) });
+        }, undefined, reject);
+    });
 }
+
 function createBindGroup(device, uniformBuffer) {
     const bindGroupLayout = device.createBindGroupLayout({
         entries: [
@@ -94,15 +111,15 @@ async function main() {
     const modelViewProjectionMatrix = mat4.create();
     const aspect = canvas.width / canvas.height;
     mat4.perspective(modelViewProjectionMatrix, Math.PI / 4, aspect, 0.1, 100);
-    mat4.translate(modelViewProjectionMatrix, modelViewProjectionMatrix, [0, 0, -3]);
-    mat4.rotateY(modelViewProjectionMatrix, modelViewProjectionMatrix, Date.now() * 0.001);
+    mat4.translate(modelViewProjectionMatrix, modelViewProjectionMatrix, [0, -2, -10]);
 
     const uniformBuffer = device.createBuffer({
         size: 4 * 16,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
 
-    const { vertices, indices } = await cube();
+    const { vertices, indices } = await loadGLTFModel("./resources/skull/model.glb");
+
     const { bindGroup, bindGroupLayout } = createBindGroup(device, uniformBuffer);
 
     const indexBuffer = device.createBuffer({
@@ -135,10 +152,11 @@ async function main() {
             entryPoint: "vertexMain",
             buffers: [
                 {
-                    arrayStride: 6 * 4,
+                    arrayStride: 8 * 4,
                     attributes: [
-                        { format: "float32x3", offset: 0, shaderLocation: 0, },
-                        { format: "float32x3", offset: 12, shaderLocation: 1, }
+                        { format: "float32x3", offset: 0, shaderLocation: 0 },  // position
+                        { format: "float32x3", offset: 12, shaderLocation: 1 }, // normal
+                        { format: "float32x2", offset: 24, shaderLocation: 2 }  // uv
                     ]
                 }
             ]
@@ -164,11 +182,11 @@ async function main() {
         usage: GPUTextureUsage.RENDER_ATTACHMENT
     });
     const depthView = depthTexture.createView();
-    
+
     function render() {
-        
+
         mat4.rotateY(modelViewProjectionMatrix, modelViewProjectionMatrix, 0.01);
-        
+
         device.queue.writeBuffer(uniformBuffer, 0, modelViewProjectionMatrix);
         const encoder = device.createCommandEncoder();
         const pass = encoder.beginRenderPass({
@@ -188,7 +206,7 @@ async function main() {
         pass.setPipeline(pipeline);
         pass.setBindGroup(0, bindGroup);
         pass.setVertexBuffer(0, vertexBuffer);
-        pass.setIndexBuffer(indexBuffer, "uint16");
+        pass.setIndexBuffer(indexBuffer, "uint32");
         pass.drawIndexed(indices.length);
         pass.end();
         device.queue.submit([encoder.finish()]);
