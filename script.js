@@ -1,6 +1,26 @@
 import { mat4 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+const fpsCounter = document.getElementById("fpsCounter");
+let lastFrameTime = performance.now();
+let frameCount = 0;
+let fps = 0;
+
+function updateFPS() {
+    const now = performance.now();
+    frameCount++;
+
+    if (now - lastFrameTime >= 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        lastFrameTime = now;
+    }
+
+    const frameTime = (1000 / (fps || 1)).toFixed(2);
+    fpsCounter.textContent = `FPS: ${fps} | Frame Time: ${frameTime}ms`;
+}
+
+
 async function setupCanvas() {
     const canvas = document.querySelector('canvas');
 
@@ -55,8 +75,8 @@ async function loadGLTFModel(url) {
 
                     for (let i = 0; i < position.length; i += 3) {
                         vertices.push(
-                            position[i], position[i + 1], position[i + 2], 
-                            normal ? normal[i] : 0, normal ? normal[i + 1] : 0, normal ? normal[i + 2] : 1, 
+                            position[i], position[i + 1], position[i + 2],
+                            normal ? normal[i] : 0, normal ? normal[i + 1] : 0, normal ? normal[i + 2] : 1,
                             uv ? uv[i / 3 * 2] : 0, uv ? uv[i / 3 * 2 + 1] : 0
                         );
                     }
@@ -184,9 +204,9 @@ async function main() {
     const depthView = depthTexture.createView();
 
     function render() {
+        updateFPS();
 
         mat4.rotateY(modelViewProjectionMatrix, modelViewProjectionMatrix, 0.01);
-
         device.queue.writeBuffer(uniformBuffer, 0, modelViewProjectionMatrix);
         const encoder = device.createCommandEncoder();
         const pass = encoder.beginRenderPass({
