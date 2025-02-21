@@ -1,7 +1,6 @@
 import { mat4 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
-import { loadTexture } from "./utils.js"
+import { loadTexture, loadShader, loadGLTFModel } from "./utils.js"
 import { updateFPS } from "./fps-counter.js";
-import { loadGLTFModel } from "./gltf-loader.js";
 import { setup } from "./setup.js"
 
 function createBindGroup(device, uniformBuffer, texture, sampler) {
@@ -25,10 +24,7 @@ function createBindGroup(device, uniformBuffer, texture, sampler) {
     return { bindGroup, bindGroupLayout };
 }
 
-async function loadShader(url) {
-    const response = await fetch(url);
-    return await response.text();
-}
+
 async function main() {
     const { device, context, canvas, canvasFormat } = await setup();
     if (!device || !context || !canvas || !canvasFormat) throw new Error('Failed to setup');
