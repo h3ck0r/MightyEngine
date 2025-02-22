@@ -9,22 +9,22 @@ export const globals = {
     mouseSensitivity: 0.002,
 }
 
-export async function setupUI(device, lightDirectionBuffer) {
+export async function setupUI(device, globalLightDirectionBuffer) {
     const inputLightingX = document.querySelector("#input-lighting-x input");
     const inputLightingY = document.querySelector("#input-lighting-y input");
     const inputLightingZ = document.querySelector("#input-lighting-z input");
 
     inputLightingX.addEventListener("input", (e) => {
         globals.lightDirection[0] = e.target.value;
-        device.queue.writeBuffer(lightDirectionBuffer, 0, globals.lightDirection);
+        device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
     });
     inputLightingY.addEventListener("input", (e) => {
         globals.lightDirection[1] = e.target.value;
-        device.queue.writeBuffer(lightDirectionBuffer, 0, globals.lightDirection);
+        device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
     });
     inputLightingZ.addEventListener("input", (e) => {
         globals.lightDirection[2] = e.target.value;
-        device.queue.writeBuffer(lightDirectionBuffer, 0, globals.lightDirection);
+        device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
     });
 }
 
@@ -85,5 +85,6 @@ export async function setup() {
 
     globals.aspect = canvas.width / canvas.height;
     setupControls();
+    if (!device || !context || !canvas || !canvasFormat) throw new Error('Failed to setup');
     return { device, context, canvas, canvasFormat };
 }

@@ -8,7 +8,6 @@ export async function loadGLTFModel(url) {
             const indices = [];
             let indexOffset = 0;
 
-            console.log(gltf)
             gltf.scene.traverse((child) => {
                 if (child.isMesh) {
                     const position = child.geometry.attributes.position.array;

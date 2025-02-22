@@ -8,14 +8,14 @@ body {
 }
 
 body {
-    cursor: url("cursor.png"), auto !important;
+    cursor: url("pictures/cursor.png"), auto !important;
 }
 
 a,
 button,
 input,
 textarea {
-    cursor: url("cursor-glowed.png"), auto !important;
+    cursor: url("pictures/cursor-glowed.png"), auto !important;
 }
 
 canvas {

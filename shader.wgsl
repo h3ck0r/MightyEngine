@@ -33,4 +33,5 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let texColor = textureSample(textureImage, samplerLoader, input.uv);
 
     return vec4<f32>(texColor.rgb * diffuse, texColor.a);
+    // return vec4<f32>(input.uv, 1.0,1.0);
 }
