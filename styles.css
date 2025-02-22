@@ -1,7 +1,3 @@
-* {
-    cursor: url("https: //static.vecteezy.com/system/resources/thumbnails/047/756/539/small/fried-chicken-leg-illustration-a-delicious-fried-chicken-isolated-on-a-transparent-background-png.png"), auto;
-}
-
 html,
 body {
     margin: 0 !important;
@@ -9,6 +5,17 @@ body {
     overflow: hidden;
     width: 100%;
     height: 100%;
+}
+
+body {
+    cursor: url("cursor.png"), auto !important;
+}
+
+a,
+button,
+input,
+textarea {
+    cursor: url("cursor-glowed.png"), auto !important;
 }
 
 canvas {

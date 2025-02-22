@@ -8,17 +8,30 @@ export const globals = {
     aspect: 1,
     mouseSensitivity: 0.002,
 }
-async function setupUI() {
-    const inputLightingX = document.getElementById("input-lighting-x");
-    const inputLightingY = document.getElementById("input-lighting-y");
-    inputLightingX.addEventListener("input", (e) => { globals.lightDirection[0] = e.value; });
-    inputLightingY.addEventListener("input", (e) => { globals.lightDirection[1] = e.value; });
+
+export async function setupUI(device, lightDirectionBuffer) {
+    const inputLightingX = document.querySelector("#input-lighting-x input");
+    const inputLightingY = document.querySelector("#input-lighting-y input");
+    const inputLightingZ = document.querySelector("#input-lighting-z input");
+
+    inputLightingX.addEventListener("input", (e) => {
+        globals.lightDirection[0] = e.target.value;
+        device.queue.writeBuffer(lightDirectionBuffer, 0, globals.lightDirection);
+    });
+    inputLightingY.addEventListener("input", (e) => {
+        globals.lightDirection[1] = e.target.value;
+        device.queue.writeBuffer(lightDirectionBuffer, 0, globals.lightDirection);
+    });
+    inputLightingZ.addEventListener("input", (e) => {
+        globals.lightDirection[2] = e.target.value;
+        device.queue.writeBuffer(lightDirectionBuffer, 0, globals.lightDirection);
+    });
 }
+
 async function setupControls() {
 
     window.addEventListener("keydown", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = true; });
     window.addEventListener("keyup", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = false; });
-
     window.addEventListener("mousemove", (e) => {
         if (document.pointerLockElement) {
             globals.mouseDelta.x += e.movementX * globals.mouseSensitivity;
@@ -72,6 +85,5 @@ export async function setup() {
 
     globals.aspect = canvas.width / canvas.height;
     setupControls();
-    setupUI();
     return { device, context, canvas, canvasFormat };
 }

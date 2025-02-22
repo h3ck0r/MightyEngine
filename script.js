@@ -1,7 +1,7 @@
 import { mat4 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
 import { loadTexture, loadShader, loadGLTFModel } from "./utils.js"
 import { updateFPS } from "./right-menu.js";
-import { setup } from "./setup.js"
+import { setup, setupUI } from "./setup.js"
 import { updateCamera } from "./movement.js"
 import { globals } from "./setup.js";
 
@@ -46,6 +46,8 @@ async function main() {
         size: 3 * 4,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
+
+    setupUI(device, lightDirectionBuffer);
 
     const { vertices, indices } = await loadGLTFModel("./resources/chicken/model.glb");
     const { texture, sampler } = await loadTexture(device, "./resources/chicken/albedo.jpg");

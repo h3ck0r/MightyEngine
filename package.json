@@ -1,6 +1,16 @@
 {
+  "name": "my-vite-project",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
   "dependencies": {
     "gl-matrix": "^3.4.3",
     "three": "^0.173.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
   }
 }
