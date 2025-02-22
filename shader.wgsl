@@ -10,6 +10,8 @@ var<uniform> modelViewProjection: mat4x4<f32>;
 var textureImage: texture_2d<f32>;
 @group(0) @binding(2)
 var samplerLoader: sampler;
+@group(0) @binding(3)
+var<uniform> lightDirection: vec3<f32>;
 
 @vertex
 fn vertexMain(@location(0) position: vec3<f32>, 
@@ -24,7 +26,7 @@ fn vertexMain(@location(0) position: vec3<f32>,
 
 @fragment
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
-    let lightDir = normalize(vec3<f32>(3.0, 4.0, -1.0)); 
+    let lightDir = normalize(lightDirection); 
 
     let diffuse = max(dot(input.normal, lightDir), 0.0); 
 

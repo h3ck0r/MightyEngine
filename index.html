@@ -4,17 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Mighty Engine</title>
+    <link rel="icon" href="website_ico.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-    <div id="fpsCounter"
-        style="position: absolute; top: 10px; right: 10px; background: rgba(0, 0, 0, 0.7); color: white; padding: 5px 10px; font-family: monospace; font-size: 14px; border-radius: 5px;">
-        FPS: 0 | Frame Time: 0ms
+    <div id="rightMenu">
+        <div>
+            <div id="fps-counter">
+                <span class="no-events">FPS: 0 | Frame Time: 0ms</span>
+            </div>
+            <div id="input-lighting-x" style="display: flex; gap: 10px; align-items: center;">
+                <span class="no-events">Lighting Y:</span>
+                <div><input type="range" min="-10" max="10" /></div>
+            </div>
+            <div id="input-lighting-y" style="display: flex; gap: 10px; align-items: center;">
+                <span class="no-events">Lighting Y:</span>
+                <div><input type="range" min="-10" max="10" /></div>
+            </div>
+        </div>
     </div>
-
-    <canvas width="512" height="512"></canvas>
+    <canvas id="render-field" width="512" height="512"></canvas>
     <script type="module" src="script.js"></script>
 </body>
 

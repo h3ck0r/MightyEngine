@@ -1,4 +1,40 @@
 
+export const globals = {
+    lightDirection: new Float32Array([1, 1, 1]),
+    cameraPosition: [0, 0, -10],
+    cameraRotation: [0, 0],
+    keyboardKeys: {},
+    mouseDelta: { x: 0, y: 0 },
+    aspect: 1,
+    mouseSensitivity: 0.002,
+}
+async function setupUI() {
+    const inputLightingX = document.getElementById("input-lighting-x");
+    const inputLightingY = document.getElementById("input-lighting-y");
+    inputLightingX.addEventListener("input", (e) => { globals.lightDirection[0] = e.value; });
+    inputLightingY.addEventListener("input", (e) => { globals.lightDirection[1] = e.value; });
+}
+async function setupControls() {
+
+    window.addEventListener("keydown", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = true; });
+    window.addEventListener("keyup", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = false; });
+
+    window.addEventListener("mousemove", (e) => {
+        if (document.pointerLockElement) {
+            globals.mouseDelta.x += e.movementX * globals.mouseSensitivity;
+            globals.mouseDelta.y += e.movementY * globals.mouseSensitivity;
+        }
+    });
+
+    const renderField = document.getElementById("render-field")
+
+    renderField.addEventListener("click", (e) => {
+        if (!document.pointerLockElement) {
+            document.body.requestPointerLock();
+        }
+    });
+}
+
 export async function setupCanvas() {
     const canvas = document.querySelector('canvas');
 
@@ -33,5 +69,9 @@ export async function setup() {
         device: device,
         format: canvasFormat
     });
+
+    globals.aspect = canvas.width / canvas.height;
+    setupControls();
+    setupUI();
     return { device, context, canvas, canvasFormat };
 }

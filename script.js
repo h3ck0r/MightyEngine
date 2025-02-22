@@ -1,14 +1,18 @@
 import { mat4 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
 import { loadTexture, loadShader, loadGLTFModel } from "./utils.js"
-import { updateFPS } from "./fps-counter.js";
+import { updateFPS } from "./right-menu.js";
 import { setup } from "./setup.js"
+import { updateCamera } from "./movement.js"
+import { globals } from "./setup.js";
 
-function createBindGroup(device, uniformBuffer, texture, sampler) {
+function createBindGroup(device, uniformBuffer, lightDirectionBuffer, texture, sampler) {
+
     const bindGroupLayout = device.createBindGroupLayout({
         entries: [
             { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
             { binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 2, visibility: GPUShaderStage.FRAGMENT, sampler: {} }
+            { binding: 2, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }
         ]
     });
 
@@ -17,33 +21,38 @@ function createBindGroup(device, uniformBuffer, texture, sampler) {
         entries: [
             { binding: 0, resource: { buffer: uniformBuffer } },
             { binding: 1, resource: texture.createView() },
-            { binding: 2, resource: sampler }
+            { binding: 2, resource: sampler },
+            { binding: 3, resource: { buffer: lightDirectionBuffer } },
         ]
     });
 
     return { bindGroup, bindGroupLayout };
 }
 
-
 async function main() {
     const { device, context, canvas, canvasFormat } = await setup();
     if (!device || !context || !canvas || !canvasFormat) throw new Error('Failed to setup');
 
     const modelViewProjectionMatrix = mat4.create();
-    const aspect = canvas.width / canvas.height;
-    mat4.perspective(modelViewProjectionMatrix, Math.PI / 4, aspect, 0.1, 100);
-    mat4.translate(modelViewProjectionMatrix, modelViewProjectionMatrix, [0, -2, -10]);
 
     const uniformBuffer = device.createBuffer({
+        label: "Uniform Buffer",
         size: 4 * 16,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
 
-    const { vertices, indices } = await loadGLTFModel("./resources/skull/model.glb");
-    const { texture, sampler } = await loadTexture(device, "./resources/skull/albedo.jpg");
-    const { bindGroup, bindGroupLayout } = await createBindGroup(device, uniformBuffer, texture, sampler);
+    const lightDirectionBuffer = device.createBuffer({
+        label: "Light Direction Buffer",
+        size: 3 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+
+    const { vertices, indices } = await loadGLTFModel("./resources/chicken/model.glb");
+    const { texture, sampler } = await loadTexture(device, "./resources/chicken/albedo.jpg");
+    const { bindGroup, bindGroupLayout } = await createBindGroup(device, uniformBuffer, lightDirectionBuffer, texture, sampler);
 
     const indexBuffer = device.createBuffer({
+        label: "Index Buffer",
         size: indices.byteLength,
         usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST,
     });
@@ -53,10 +62,10 @@ async function main() {
         size: vertices.byteLength,
         usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
-
     device.queue.writeBuffer(indexBuffer, 0, indices);
     device.queue.writeBuffer(vertexBuffer, 0, vertices);
     device.queue.writeBuffer(uniformBuffer, 0, modelViewProjectionMatrix);
+    device.queue.writeBuffer(lightDirectionBuffer, 0, globals.lightDirection);
 
     const shaderModule = device.createShaderModule({
         label: 'Shader',
@@ -103,11 +112,9 @@ async function main() {
         usage: GPUTextureUsage.RENDER_ATTACHMENT
     });
     const depthView = depthTexture.createView();
-    console.log(pipeline)
     function render() {
         updateFPS();
-
-        mat4.rotateY(modelViewProjectionMatrix, modelViewProjectionMatrix, 0.01);
+        updateCamera(modelViewProjectionMatrix);
         device.queue.writeBuffer(uniformBuffer, 0, modelViewProjectionMatrix);
         const encoder = device.createCommandEncoder();
         const pass = encoder.beginRenderPass({
