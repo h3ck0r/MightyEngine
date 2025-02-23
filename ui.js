@@ -2,6 +2,7 @@ let lastFrameTime = performance.now();
 let frameCount = 0;
 let fps = 0;
 
+const fpsCounter = document.getElementsByClassName("no-events")[0];
 export function updateFPS() {
     const now = performance.now();
     frameCount++;
@@ -13,6 +14,5 @@ export function updateFPS() {
     }
 
     const frameTime = (1000 / (fps || 1)).toFixed(2);
-    const fpsCounter = document.getElementsByClassName("no-events")[0];
     fpsCounter.textContent = `FPS: ${fps} | Frame Time: ${frameTime}ms`;
 }

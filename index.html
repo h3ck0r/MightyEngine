@@ -10,7 +10,12 @@
 </head>
 
 <body>
-    <div id="rightMenu">
+    <div id="main-menu">
+        <div>Welcome to MightyEngine!</div>
+        <button id="toggle-debug-menu">Toggle debug menu</button>
+        <button id="exit-button">Exit menu</button>
+    </div>
+    <div id="right-menu">
         <div>
             <div id="fps-counter">
                 <span class="no-events">FPS: 0 | Frame Time: 0ms</span>
@@ -18,17 +23,19 @@
             <div id="input-lighting-x" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">Lighting X:</span>
                 <div><input type="range" min="0" max="10" /></div>
-            </div><div id="input-lighting-y" style="display: flex; gap: 10px; align-items: center;">
+            </div>
+            <div id="input-lighting-y" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">Lighting Y:</span>
                 <div><input type="range" min="0" max="10" /></div>
-            </div><div id="input-lighting-z" style="display: flex; gap: 10px; align-items: center;">
+            </div>
+            <div id="input-lighting-z" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">Lighting Z:</span>
                 <div><input type="range" min="0" max="10" /></div>
             </div>
         </div>
     </div>
     <canvas id="render-field" width="512" height="512"></canvas>
-    <script type="module" src="script.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 
 </html>

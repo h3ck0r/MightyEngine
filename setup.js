@@ -1,7 +1,7 @@
 
 export const globals = {
     lightDirection: new Float32Array([1, 1, 1]),
-    cameraPosition: [0, 0, -10],
+    cameraPosition: [0, 0, 0],
     cameraRotation: [0, 0],
     keyboardKeys: {},
     mouseDelta: { x: 0, y: 0 },
@@ -10,10 +10,26 @@ export const globals = {
 }
 
 export async function setupUI(device, globalLightDirectionBuffer) {
+    window.addEventListener("keydown", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = true; });
+    window.addEventListener("keyup", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = false; });
+    window.addEventListener("mousemove", (e) => {
+        if (document.pointerLockElement) {
+            globals.mouseDelta.x += e.movementX * globals.mouseSensitivity;
+            globals.mouseDelta.y += e.movementY * globals.mouseSensitivity;
+        }
+    });
+
+    const renderField = document.getElementById("render-field")
+    renderField.addEventListener("click", (e) => {
+        if (!document.pointerLockElement) {
+            document.body.requestPointerLock();
+            document.getElementById("main-menu").style.display = "none";
+        }
+    });
+
     const inputLightingX = document.querySelector("#input-lighting-x input");
     const inputLightingY = document.querySelector("#input-lighting-y input");
     const inputLightingZ = document.querySelector("#input-lighting-z input");
-
     inputLightingX.addEventListener("input", (e) => {
         globals.lightDirection[0] = e.target.value;
         device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
@@ -26,26 +42,25 @@ export async function setupUI(device, globalLightDirectionBuffer) {
         globals.lightDirection[2] = e.target.value;
         device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
     });
-}
 
-async function setupControls() {
-
-    window.addEventListener("keydown", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = true; });
-    window.addEventListener("keyup", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = false; });
-    window.addEventListener("mousemove", (e) => {
-        if (document.pointerLockElement) {
-            globals.mouseDelta.x += e.movementX * globals.mouseSensitivity;
-            globals.mouseDelta.y += e.movementY * globals.mouseSensitivity;
-        }
+    const menuExitButton = document.getElementById("exit-button");
+    menuExitButton.addEventListener("click", () => {
+        document.getElementById("main-menu").style.display = "none";
+        document.body.requestPointerLock();
     });
 
-    const renderField = document.getElementById("render-field")
-
-    renderField.addEventListener("click", (e) => {
-        if (!document.pointerLockElement) {
-            document.body.requestPointerLock();
+    const toggleDebugMenu = document.getElementById("toggle-debug-menu");
+    let debugMenuToggled = true;
+    toggleDebugMenu.addEventListener("click", () => {
+        if (debugMenuToggled) {
+            document.getElementById("right-menu").style.display = "none";
+            debugMenuToggled = false;
         }
-    });
+        else {
+            document.getElementById("right-menu").style.display = "block";
+            debugMenuToggled = true;
+        }
+    })
 }
 
 export async function setupCanvas() {
@@ -84,7 +99,6 @@ export async function setup() {
     });
 
     globals.aspect = canvas.width / canvas.height;
-    setupControls();
     if (!device || !context || !canvas || !canvasFormat) throw new Error('Failed to setup');
     return { device, context, canvas, canvasFormat };
 }
