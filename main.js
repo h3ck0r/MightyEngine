@@ -5,9 +5,8 @@ import { setup, setupUI } from "./setup.js"
 import { updateCamera } from "./movement.js"
 import { globals } from "./setup.js";
 import { createPipeline } from "./pipeline.js";
-import { GameObject } from "./game-object.js";
+import { loadObjects } from "./scene.js";
 
-const gameObjects = [];
 
 export async function main() {
     const { device, context, canvas, canvasFormat } = await setup();
@@ -20,15 +19,16 @@ export async function main() {
         size: 4 * 16,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
+    
     const globalLightDirectionBuffer = device.createBuffer({
         label: "Global Light Direction Buffer",
         size: 3 * 4,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
+    device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
 
     setupUI(device, globalLightDirectionBuffer);
 
-    device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
 
     const depthTexture = device.createTexture({
         size: [canvas.width, canvas.height, 1],
@@ -47,46 +47,10 @@ export async function main() {
         ]
     });
 
-    const instance_count = 1000;
-    const url = "resources/chicken";
-    const chickenObj = new GameObject();
-    await Promise.all([
-        chickenObj.addModel(url + "/model.glb", device),
-        chickenObj.addTexture(url + "/albedo.jpg", device)
-    ]);
-    for (let i = 0; i < instance_count; i++) {
-        const obj = new GameObject();
-        let val = Math.random();
-        let range = 100;
+    const gameObjects = await loadObjects(device, bindGroupLayout, mvpBuffer, globalLightDirectionBuffer);
 
-        
-        obj.position = vec3.fromValues(Math.random() * range - range / 2, Math.random() * range - range / 2, Math.random() * range - range / 2);
-        obj.rotation = vec3.fromValues(Math.random() * range - range / 2, Math.random() * range - range / 2, Math.random() * range - range / 2);
-        obj.scale = vec3.fromValues(val, val, val)
-        obj.updateTransform();
-
-        obj.vertexBuffer = chickenObj.vertexBuffer;
-        obj.indexBuffer = chickenObj.indexBuffer;
-        obj.indices = chickenObj.indices;
-        obj.modelUniformBuffer = device.createBuffer({
-            label: "Model Matrix Buffer",
-            size: 4 * 16,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
-        obj.bindGroup = device.createBindGroup({
-            layout: bindGroupLayout,
-            entries: [
-                { binding: 0, resource: { buffer: mvpBuffer } },
-                { binding: 1, resource: { buffer: obj.modelUniformBuffer } },
-                { binding: 2, resource: chickenObj.texture.createView() },
-                { binding: 3, resource: chickenObj.sampler },
-                { binding: 4, resource: { buffer: globalLightDirectionBuffer } },
-            ]
-        });
-
-        gameObjects.push(obj);
-    }
     const pipeline = createPipeline(device, canvasFormat, shaderModule, bindGroupLayout);
+
     function render() {
         updateFPS();
         updateCamera(modelViewProjectionMatrix);
@@ -113,7 +77,7 @@ export async function main() {
             const obj = gameObjects[i];
             if (!obj.velocity) {
                 obj.velocity = vec3.fromValues(
-                    (Math.random() - 0.5) * 0.01,  
+                    (Math.random() - 0.5) * 0.01,
                     (Math.random() - 0.5) * 0.01,
                     (Math.random() - 0.5) * 0.01
                 );
@@ -121,12 +85,12 @@ export async function main() {
 
             if (!obj.rotationVelocity) {
                 obj.rotationVelocity = vec3.fromValues(
-                    (Math.random() - 0.5) * 0.002,  
+                    (Math.random() - 0.5) * 0.002,
                     (Math.random() - 0.5) * 0.002,
                     (Math.random() - 0.5) * 0.002
                 );
             }
-            
+
             vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
             vec3.add(obj.position, obj.position, obj.velocity);
 
