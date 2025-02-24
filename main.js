@@ -19,7 +19,7 @@ export async function main() {
         size: 4 * 16,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    
+
     const globalLightDirectionBuffer = device.createBuffer({
         label: "Global Light Direction Buffer",
         size: 3 * 4,
@@ -41,9 +41,11 @@ export async function main() {
         entries: [
             { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
             { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
-            { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 3, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 4, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }
+            { binding: 2, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
+            { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 4, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 5, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 6, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
         ]
     });
 

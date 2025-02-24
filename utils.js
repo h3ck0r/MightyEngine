@@ -14,12 +14,14 @@ export async function loadGLTFModel(url) {
                     const normal = child.geometry.attributes.normal ? child.geometry.attributes.normal.array : null;
                     const uv = child.geometry.attributes.uv ? child.geometry.attributes.uv.array : null;
                     const index = child.geometry.index ? child.geometry.index.array : null;
+                    const tangent = child.geometry.attributes.tangent ? child.geometry.attributes.tangent.array : null;
 
                     for (let i = 0; i < position.length; i += 3) {
                         vertices.push(
                             position[i], position[i + 1], position[i + 2],
                             normal ? normal[i] : 0, normal ? normal[i + 1] : 0, normal ? normal[i + 2] : 1,
-                            uv ? uv[i / 3 * 2] : 0, uv ? uv[i / 3 * 2 + 1] : 0
+                            uv ? uv[i / 3 * 2] : 0, uv ? uv[i / 3 * 2 + 1] : 0,
+                            tangent ? tangent[i] : 1, tangent ? tangent[i + 1] : 0, tangent ? tangent[i + 2] : 0, tangent ? tangent[i + 3] : 1
                         );
                     }
 
@@ -47,6 +49,7 @@ export async function loadTexture(device, url) {
         format: 'rgba8unorm',
         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
     });
+    
     device.queue.copyExternalImageToTexture(
         { source: imageBitmap },
         { texture: texture },

@@ -36,9 +36,14 @@ export class GameObject {
         mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
         mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
     }
-    async addTexture(url, device) {
+    async addAlbedo(url, device) {
         const { texture, sampler } = await loadTexture(device, url);
-        this.texture = texture;
-        this.sampler = sampler;
+        this.albedoTexture = texture;
+        this.albedoSampler = sampler;
+    }
+    async addNormal(url, device) {
+        const { texture, sampler } = await loadTexture(device, url);
+        this.normalTexture = texture;
+        this.normalSampler = sampler;
     }
 }
