@@ -1,4 +1,4 @@
-import { loadTexture, loadGLTFModel } from "./utils.js"
+import { loadGLTFModel } from "./utils.js"
 import { mat4, vec3 } from "gl-matrix";
 
 export class GameObject {
@@ -16,37 +16,20 @@ export class GameObject {
 
         const material = modelData.material;
         const albedoBitMap = material.map.source.data;
-        const normalBitMap = material.normalMap.source.data
+        const normalBitMap = material.normalMap.source.data;
+        const roughnessBitMap = material.roughnessMap.source.data;
 
-        this.albedoTexture = device.createTexture({
-            size: [albedoBitMap.width, albedoBitMap.height, 1],
-            format: 'rgba8unorm',
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
-        });
-        device.queue.copyExternalImageToTexture(
-            { source: albedoBitMap },
-            { texture: this.albedoTexture },
-            [albedoBitMap.width, albedoBitMap.height, 1]
-        );
-        this.albedoSampler = device.createSampler({
-            magFilter: 'linear',
-            minFilter: 'linear'
-        });
+        const albedoData = this.loadTexture(device, albedoBitMap);
+        this.albedoTexture = albedoData.texture;
+        this.albedoSampler = albedoData.sampler;
 
-        this.normalTexture = device.createTexture({
-            size: [normalBitMap.width, normalBitMap.height, 1],
-            format: 'rgba8unorm',
-            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
-        });
-        device.queue.copyExternalImageToTexture(
-            { source: normalBitMap },
-            { texture: this.normalTexture },
-            [normalBitMap.width, normalBitMap.height, 1]
-        );
-        this.normalSampler = device.createSampler({
-            magFilter: 'linear',
-            minFilter: 'linear'
-        });
+        const normalData = this.loadTexture(device, normalBitMap);
+        this.normalTexture = normalData.texture;
+        this.normalSampler = normalData.sampler;
+
+        const roughnessData = this.loadTexture(device, roughnessBitMap);
+        this.roughnessTexture = roughnessData.texture;
+        this.roughnessSampler = roughnessData.sampler;
 
         this.vertexBuffer = device.createBuffer({
             label: "Vertex Buffer",
@@ -62,7 +45,7 @@ export class GameObject {
         });
         device.queue.writeBuffer(this.indexBuffer, 0, this.indices);
 
-        
+
     }
     updateTransform() {
         mat4.identity(this.modelMatrix);
@@ -72,5 +55,21 @@ export class GameObject {
         mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
         mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
     }
-   
+    loadTexture(device, bitMap) {
+        const texture = device.createTexture({
+            size: [bitMap.width, bitMap.height, 1],
+            format: 'rgba8unorm',
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
+        });
+        device.queue.copyExternalImageToTexture(
+            { source: bitMap },
+            { texture: texture },
+            [bitMap.width, bitMap.height, 1]
+        );
+        const sampler = device.createSampler({
+            magFilter: 'linear',
+            minFilter: 'linear'
+        });
+        return { texture, sampler };
+    }
 }

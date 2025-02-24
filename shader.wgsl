@@ -27,6 +27,12 @@ var normalImage: texture_2d<f32>;
 @group(0) @binding(6)
 var normalLoader: sampler;
 
+@group(0) @binding(7)
+var roughnessImage: texture_2d<f32>;
+
+@group(0) @binding(8)
+var roughnessLoader: sampler;
+
 
 @vertex
 fn vertexMain(
@@ -59,7 +65,11 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let lightDir = normalize(lightDirection);
     let diffuse = max(dot(mappedNormal, lightDir), 0.0);
     
-    return vec4<f32>(texColor.rgb * diffuse, texColor.a);
+    let roughness = textureSample(roughnessImage, roughnessLoader, input.fragUV).b; 
+    let adjustedDiffuse = mix(diffuse, 1.0, roughness); 
+
+
+    return vec4<f32>(texColor.rgb * adjustedDiffuse, texColor.a);
     // return vec4<f32>(input.fragUV, 1.0, texColor.a);
 }
 

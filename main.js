@@ -46,6 +46,8 @@ export async function main() {
             { binding: 4, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
             { binding: 5, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
             { binding: 6, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 8, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
         ]
     });
 
@@ -93,8 +95,8 @@ export async function main() {
                 );
             }
 
-            // vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
-            // vec3.add(obj.position, obj.position, obj.velocity);
+            vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
+            vec3.add(obj.position, obj.position, obj.velocity);
 
             obj.updateTransform();
 

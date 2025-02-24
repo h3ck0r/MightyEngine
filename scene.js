@@ -35,7 +35,9 @@ export async function loadObjects(device, bindGroupLayout, mvpBuffer, globalLigh
                 { binding: 3, resource: chickenObj.albedoTexture.createView() },
                 { binding: 4, resource: chickenObj.albedoSampler },
                 { binding: 5, resource: chickenObj.normalTexture.createView() },
-                { binding: 6, resource: chickenObj.normalSampler }
+                { binding: 6, resource: chickenObj.normalSampler },
+                { binding: 7, resource: chickenObj.roughnessTexture.createView() },
+                { binding: 8, resource: chickenObj.roughnessSampler }
             ]
         });
 
