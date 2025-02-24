@@ -1,7 +1,7 @@
 
 export const globals = {
     lightDirection: new Float32Array([1, 1, 1]),
-    cameraPosition: [0, 0, 0],
+    cameraPosition: new Float32Array([0, 0, 0]),
     cameraRotation: [0, 0],
     keyboardKeys: {},
     mouseDelta: { x: 0, y: 0 },

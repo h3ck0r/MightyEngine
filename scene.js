@@ -1,7 +1,7 @@
 import { vec3 } from "gl-matrix";
 import { GameObject } from "./game-object.js";
 
-export async function loadObjects(device, bindGroupLayout, mvpBuffer, globalLightDirectionBuffer) {
+export async function loadObjects(device, bindGroupLayout, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer) {
     const gameObjects = [];
 
     const instance_count = 100;
@@ -31,13 +31,14 @@ export async function loadObjects(device, bindGroupLayout, mvpBuffer, globalLigh
             entries: [
                 { binding: 0, resource: { buffer: mvpBuffer } },
                 { binding: 1, resource: { buffer: obj.modelUniformBuffer } },
-                { binding: 2, resource: { buffer: globalLightDirectionBuffer } },
-                { binding: 3, resource: chickenObj.albedoTexture.createView() },
-                { binding: 4, resource: chickenObj.albedoSampler },
-                { binding: 5, resource: chickenObj.normalTexture.createView() },
-                { binding: 6, resource: chickenObj.normalSampler },
-                { binding: 7, resource: chickenObj.roughnessTexture.createView() },
-                { binding: 8, resource: chickenObj.roughnessSampler }
+                { binding: 2, resource: { buffer: cameraPositionBuffer } },
+                { binding: 3, resource: { buffer: globalLightDirectionBuffer } },
+                { binding: 4, resource: chickenObj.albedoTexture.createView() },
+                { binding: 5, resource: chickenObj.albedoSampler },
+                { binding: 6, resource: chickenObj.normalTexture.createView() },
+                { binding: 7, resource: chickenObj.normalSampler },
+                { binding: 8, resource: chickenObj.roughnessTexture.createView() },
+                { binding: 9, resource: chickenObj.roughnessSampler }
             ]
         });
 

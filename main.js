@@ -27,8 +27,14 @@ export async function main() {
     });
     device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
 
-    setupUI(device, globalLightDirectionBuffer);
+    const cameraPositionBuffer = device.createBuffer({
+        label: "Camera Position Buffer",
+        size: 3 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    device.queue.writeBuffer(cameraPositionBuffer, 0, globals.cameraPosition);
 
+    setupUI(device, globalLightDirectionBuffer);
 
     const depthTexture = device.createTexture({
         size: [canvas.width, canvas.height, 1],
@@ -42,16 +48,17 @@ export async function main() {
             { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
             { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
             { binding: 2, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
-            { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 4, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 5, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 6, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 8, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
+            { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 5, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 7, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 9, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
         ]
     });
 
-    const gameObjects = await loadObjects(device, bindGroupLayout, mvpBuffer, globalLightDirectionBuffer);
+    const gameObjects = await loadObjects(device, bindGroupLayout, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer);
 
     const pipeline = createPipeline(device, canvasFormat, shaderModule, bindGroupLayout);
 
@@ -59,6 +66,7 @@ export async function main() {
         updateFPS();
         updateCamera(modelViewProjectionMatrix);
         device.queue.writeBuffer(mvpBuffer, 0, modelViewProjectionMatrix);
+        device.queue.writeBuffer(cameraPositionBuffer, 0, globals.cameraPosition);
 
         const encoder = device.createCommandEncoder();
         const pass = encoder.beginRenderPass({
