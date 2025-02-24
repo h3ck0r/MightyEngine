@@ -93,8 +93,8 @@ export async function main() {
                 );
             }
 
-            vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
-            vec3.add(obj.position, obj.position, obj.velocity);
+            // vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
+            // vec3.add(obj.position, obj.position, obj.velocity);
 
             obj.updateTransform();
 

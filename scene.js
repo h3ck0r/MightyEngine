@@ -4,18 +4,14 @@ import { GameObject } from "./game-object.js";
 export async function loadObjects(device, bindGroupLayout, mvpBuffer, globalLightDirectionBuffer) {
     const gameObjects = [];
 
-    const instance_count = 3000;
+    const instance_count = 100;
     const url = "resources/chicken";
     const chickenObj = new GameObject();
-    await Promise.all([
-        chickenObj.addModel(url + "/model.glb", device),
-        chickenObj.addAlbedo(url + "/albedo.jpg", device),
-        chickenObj.addNormal(url + "/normal.jpg", device)
-    ]);
+    await chickenObj.addModel(url + "/model.glb", device)
     for (let i = 0; i < instance_count; i++) {
         const obj = new GameObject();
         let val = Math.random();
-        let range = 100;
+        let range = 20;
 
         obj.position = vec3.fromValues(Math.random() * range - range / 2, Math.random() * range - range / 2, Math.random() * range - range / 2);
         obj.rotation = vec3.fromValues(Math.random() * range - range / 2, Math.random() * range - range / 2, Math.random() * range - range / 2);

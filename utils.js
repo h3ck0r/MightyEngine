@@ -6,10 +6,12 @@ export async function loadGLTFModel(url) {
         loader.load(url, (gltf) => {
             const vertices = [];
             const indices = [];
+            let material = null;
             let indexOffset = 0;
 
             gltf.scene.traverse((child) => {
                 if (child.isMesh) {
+                    material = child.material ? child.material : null;
                     const position = child.geometry.attributes.position.array;
                     const normal = child.geometry.attributes.normal ? child.geometry.attributes.normal.array : null;
                     const uv = child.geometry.attributes.uv ? child.geometry.attributes.uv.array : null;
@@ -35,7 +37,11 @@ export async function loadGLTFModel(url) {
                 }
             });
 
-            resolve({ vertices: new Float32Array(vertices), indices: new Uint32Array(indices) });
+            resolve({
+                vertices: new Float32Array(vertices),
+                indices: new Uint32Array(indices),
+                material
+            });
         }, undefined, reject);
     });
 }
@@ -49,7 +55,6 @@ export async function loadTexture(device, url) {
         format: 'rgba8unorm',
         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
     });
-    
     device.queue.copyExternalImageToTexture(
         { source: imageBitmap },
         { texture: texture },

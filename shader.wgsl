@@ -60,5 +60,6 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let diffuse = max(dot(mappedNormal, lightDir), 0.0);
     
     return vec4<f32>(texColor.rgb * diffuse, texColor.a);
+    // return vec4<f32>(input.fragUV, 1.0, texColor.a);
 }
 

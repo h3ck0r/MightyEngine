@@ -10,9 +10,43 @@ export class GameObject {
         mat4.identity(this.modelMatrix);
     }
     async addModel(url, device) {
-        const { vertices, indices } = await loadGLTFModel(url);
-        this.vertices = vertices;
-        this.indices = indices;
+        const modelData = await loadGLTFModel(url);
+        this.vertices = modelData.vertices;
+        this.indices = modelData.indices;
+
+        const material = modelData.material;
+        const albedoBitMap = material.map.source.data;
+        const normalBitMap = material.normalMap.source.data
+
+        this.albedoTexture = device.createTexture({
+            size: [albedoBitMap.width, albedoBitMap.height, 1],
+            format: 'rgba8unorm',
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
+        });
+        device.queue.copyExternalImageToTexture(
+            { source: albedoBitMap },
+            { texture: this.albedoTexture },
+            [albedoBitMap.width, albedoBitMap.height, 1]
+        );
+        this.albedoSampler = device.createSampler({
+            magFilter: 'linear',
+            minFilter: 'linear'
+        });
+
+        this.normalTexture = device.createTexture({
+            size: [normalBitMap.width, normalBitMap.height, 1],
+            format: 'rgba8unorm',
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
+        });
+        device.queue.copyExternalImageToTexture(
+            { source: normalBitMap },
+            { texture: this.normalTexture },
+            [normalBitMap.width, normalBitMap.height, 1]
+        );
+        this.normalSampler = device.createSampler({
+            magFilter: 'linear',
+            minFilter: 'linear'
+        });
 
         this.vertexBuffer = device.createBuffer({
             label: "Vertex Buffer",
@@ -27,6 +61,8 @@ export class GameObject {
             usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
         });
         device.queue.writeBuffer(this.indexBuffer, 0, this.indices);
+
+        
     }
     updateTransform() {
         mat4.identity(this.modelMatrix);
@@ -36,14 +72,5 @@ export class GameObject {
         mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
         mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
     }
-    async addAlbedo(url, device) {
-        const { texture, sampler } = await loadTexture(device, url);
-        this.albedoTexture = texture;
-        this.albedoSampler = sampler;
-    }
-    async addNormal(url, device) {
-        const { texture, sampler } = await loadTexture(device, url);
-        this.normalTexture = texture;
-        this.normalSampler = sampler;
-    }
+   
 }
