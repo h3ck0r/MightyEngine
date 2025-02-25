@@ -1,3 +1,4 @@
+import { loadShader } from "./utils.js"
 
 export const globals = {
     lightDirection: new Float32Array([1, 1, 1]),
@@ -7,6 +8,38 @@ export const globals = {
     mouseDelta: { x: 0, y: 0 },
     aspect: 1,
     mouseSensitivity: 0.002,
+}
+
+export function createBindLayouts(device) {
+    const mainBindGroupLayout = device.createBindGroupLayout({
+        entries: [
+            { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
+            { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
+            { binding: 2, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
+            { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
+            { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 5, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 7, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 9, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+        ]
+    });
+    const skyboxBindGroupLayout = device.createBindGroupLayout({
+        entries: [
+            { binding: 0, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float", viewDimension: "cube" } }
+        ]
+    });
+    return { mainBindGroupLayout, skyboxBindGroupLayout }
+}
+
+export async function loadShaders(device) {
+    const mainShaderCode = await loadShader('main_shader.wgsl');
+    const mainShaderModule = device.createShaderModule({ label: 'Shader', code: mainShaderCode });
+    const skyboxShaderCode = await loadShader('skybox_shader.wgsl');
+    const skyboxShaderModule = device.createShaderModule({ label: 'Shader', code: skyboxShaderCode });
+    return { mainShaderModule, skyboxShaderModule };
 }
 
 export async function setupUI(device, globalLightDirectionBuffer) {

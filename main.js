@@ -1,17 +1,14 @@
 import { mat4, vec3 } from "gl-matrix";
-import { loadShader } from "./utils.js"
 import { updateFPS } from "./ui.js";
-import { setup, setupUI } from "./setup.js"
 import { updateCamera } from "./movement.js"
-import { globals } from "./setup.js";
+import { globals, loadShaders, setup, setupUI, createBindLayouts } from "./setup.js";
 import { createPipeline } from "./pipeline.js";
 import { loadObjects } from "./scene.js";
-
+import { loadSkybox } from "./skybox.js";
 
 export async function main() {
     const { device, context, canvas, canvasFormat } = await setup();
-    const shaderCode = await loadShader('shader.wgsl');
-    const shaderModule = device.createShaderModule({ label: 'Shader', code: shaderCode });
+    const { mainShaderModule, skyboxShaderModule } = await loadShaders(device);
 
     const modelViewProjectionMatrix = mat4.create();
     const mvpBuffer = device.createBuffer({
@@ -43,24 +40,13 @@ export async function main() {
     });
     const depthView = depthTexture.createView();
 
-    const bindGroupLayout = device.createBindGroupLayout({
-        entries: [
-            { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
-            { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
-            { binding: 2, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
-            { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
-            { binding: 4, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 5, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 7, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 9, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-        ]
-    });
+    const { mainBindGroupLayout, skyboxBindGroupLayout } = createBindLayouts(device);
 
-    const gameObjects = await loadObjects(device, bindGroupLayout, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer);
+    const gameObjects = await loadObjects(device, mainBindGroupLayout, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer);
 
-    const pipeline = createPipeline(device, canvasFormat, shaderModule, bindGroupLayout);
+    const { skyboxBuffer, indexBuffer, skyboxBindGroup } = await loadSkybox(device, skyboxBindGroupLayout);
+
+    const { mainPipeline, skyboxPipeline } = createPipeline(device, canvasFormat, mainShaderModule, skyboxShaderModule, mainBindGroupLayout, skyboxBindGroupLayout);
 
     function render() {
         updateFPS();
@@ -83,8 +69,15 @@ export async function main() {
                 depthStoreOp: "store"
             }
         });
-        pass.setPipeline(pipeline);
+        // skybox
+        pass.setPipeline(skyboxPipeline);
+        pass.setBindGroup(0, skyboxBindGroup);
+        pass.setVertexBuffer(0, skyboxBuffer);
+        pass.setIndexBuffer(indexBuffer, "uint16");
+        pass.drawIndexed(36);
 
+        // game objects
+        pass.setPipeline(mainPipeline);
         for (let i = 0; i < gameObjects.length; i++) {
             const obj = gameObjects[i];
             if (!obj.velocity) {

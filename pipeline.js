@@ -1,5 +1,5 @@
-export function createPipeline(device, canvasFormat, shaderModule, bindGroupLayout) {
-    return device.createRenderPipeline({
+export function createPipeline(device, canvasFormat, shaderModule, skyboxShaderModule, bindGroupLayout, skyboxBindGroupLayout) {
+    const mainPipeline = device.createRenderPipeline({
         label: "Pipeline",
         layout: device.createPipelineLayout({
             bindGroupLayouts: [bindGroupLayout]
@@ -32,5 +32,38 @@ export function createPipeline(device, canvasFormat, shaderModule, bindGroupLayo
             depthWriteEnabled: true,
             depthCompare: "less"
         }
-    })
+    });
+    const skyboxPipeline = device.createRenderPipeline({
+        label: "Skybox Pipeline",
+        layout: device.createPipelineLayout({
+            bindGroupLayouts: [skyboxBindGroupLayout]
+        }),
+        vertex: {
+            module: skyboxShaderModule,
+            entryPoint: "vertexMain",
+            buffers: [
+                {
+                    arrayStride: 4 * 3,
+                    attributes: [
+                        { shaderLocation: 0, offset: 0, format: "float32x3" }
+                    ]
+                }
+            ]
+        },
+        fragment: {
+            module: skyboxShaderModule,
+            entryPoint: "fragmentMain",
+            targets: [{
+                format: canvasFormat
+            }]
+        },
+        depthStencil: {
+            format: "depth24plus",
+            depthWriteEnabled: false,
+            depthCompare: "less-equal"
+        }
+    });
+
+    return { mainPipeline, skyboxPipeline };
+
 }
