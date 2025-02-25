@@ -94,8 +94,10 @@ fn geometrySmith(N: vec3<f32>, V: vec3<f32>, L: vec3<f32>, roughness: f32) -> f3
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let texColor = textureSample(textureImage, samplerLoader, input.fragUV);
     let normalSample = textureSample(normalImage, normalLoader, input.fragUV).rgb * 2.0 - 1.0;
-    let roughness = textureSample(roughnessImage, roughnessLoader, input.fragUV).g;
-    
+    let roughnessSample = textureSample(roughnessImage, roughnessLoader, input.fragUV);
+    let roughness = roughnessSample.g;
+    let ao = roughnessSample.r; 
+
     let TBN = mat3x3<f32>(input.fragTangent, input.fragBitangent, input.fragNormal);
     let mappedNormal = normalize(TBN * normalSample);
 
@@ -114,7 +116,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let specular = numerator / denominator;
 
     let kD = vec3<f32>(1.0) - fresnel;
-    let diffuse = kD * texColor.rgb * max(dot(mappedNormal, lightDir), 0.0);
+    let diffuse = kD * texColor.rgb * max(dot(mappedNormal, lightDir), 0.0)*ao; 
 
     let finalColor = diffuse + specular;
 

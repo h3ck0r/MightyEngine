@@ -63,8 +63,13 @@ export async function loadTexture(device, url) {
 
     const sampler = device.createSampler({
         magFilter: 'linear',
-        minFilter: 'linear'
+        minFilter: 'linear',
+        mipmapFilter: 'linear',
+        addressModeU: 'repeat',
+        addressModeV: 'repeat',
+        addressModeW: 'repeat'
     });
+
 
     return { texture, sampler };
 }

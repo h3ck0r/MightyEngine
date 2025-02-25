@@ -1,11 +1,6 @@
 {
   "name": "mighty-engine",
   "version": "1.0.0",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
-  },
   "dependencies": {
     "gl-matrix": "^3.4.3",
     "three": "^0.173.0"

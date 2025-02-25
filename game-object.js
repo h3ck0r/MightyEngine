@@ -1,5 +1,6 @@
 import { loadGLTFModel } from "./utils.js"
 import { mat4, vec3 } from "gl-matrix";
+import * as THREE from 'three';
 
 export class GameObject {
     constructor() {
@@ -15,19 +16,19 @@ export class GameObject {
         this.indices = modelData.indices;
 
         const material = modelData.material;
-        const albedoBitMap = material.map.source.data;
-        const normalBitMap = material.normalMap.source.data;
-        const roughnessBitMap = material.roughnessMap.source.data;
 
-        const albedoData = this.loadTexture(device, albedoBitMap);
+        const albedoBitMap = material.map?.source.data;
+        const albedoData = albedoBitMap ? this.loadTexture(device, albedoBitMap) : this.createDefaultTexture(device, [255, 255, 255, 255]);
         this.albedoTexture = albedoData.texture;
         this.albedoSampler = albedoData.sampler;
 
-        const normalData = this.loadTexture(device, normalBitMap);
+        const normalBitMap = material.normalMap?.source.data;
+        const normalData = normalBitMap ? this.loadTexture(device, normalBitMap) : this.createDefaultTexture(device, [128, 128, 255, 255]);
         this.normalTexture = normalData.texture;
         this.normalSampler = normalData.sampler;
 
-        const roughnessData = this.loadTexture(device, roughnessBitMap);
+        const roughnessBitMap = material.roughnessMap?.source.data;
+        const roughnessData = roughnessBitMap ? this.loadTexture(device, roughnessBitMap) : this.createDefaultTexture(device, [255, 255, 255, 255]);
         this.roughnessTexture = roughnessData.texture;
         this.roughnessSampler = roughnessData.sampler;
 
@@ -44,8 +45,6 @@ export class GameObject {
             usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
         });
         device.queue.writeBuffer(this.indexBuffer, 0, this.indices);
-
-
     }
     updateTransform() {
         mat4.identity(this.modelMatrix);
@@ -70,6 +69,28 @@ export class GameObject {
             magFilter: 'linear',
             minFilter: 'linear'
         });
+        return { texture, sampler };
+    }
+    createDefaultTexture(device, color) {
+        const texture = device.createTexture({
+            size: [1, 1, 1],
+            format: "rgba8unorm",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
+        });
+
+        const textureData = new Uint8Array(color);
+        device.queue.writeTexture(
+            { texture: texture, mipLevel: 0, origin: [0, 0, 0] },
+            textureData,
+            { bytesPerRow: 4, rowsPerImage: 1 },
+            [1, 1, 1]
+        );
+
+        const sampler = device.createSampler({
+            magFilter: "linear",
+            minFilter: "linear"
+        });
+
         return { texture, sampler };
     }
 }
