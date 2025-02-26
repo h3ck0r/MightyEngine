@@ -1,10 +1,10 @@
 import { vec3 } from "gl-matrix";
-import { updateFPS } from "./ui.js";
-import { updateCamera } from "./movement.js"
-import { globals, loadShaders, setup, setupUI, createBindLayouts, setupBuffers, createDepthTexture } from "./setup.js";
-import { createPipeline } from "./pipeline.js";
-import { loadObjects } from "./scene.js";
-import { loadSkybox } from "./skybox.js";
+import { updateFPS } from "./src/ui.js";
+import { updateCamera } from "./src/movement.js"
+import { globals, loadShaders, setup, setupUI, createBindLayouts, setupBuffers, createDepthTexture } from "./src/setup.js";
+import { createPipeline } from "./src/pipeline.js";
+import { loadObjects } from "./src/scene.js";
+import { loadSkybox } from "./src/skybox.js";
 
 export async function main() {
     // setup
@@ -88,7 +88,7 @@ export async function main() {
         update();
         renderSkybox(pass);
         renderObjects(pass);
-        
+
         pass.end();
         device.queue.submit([encoder.finish()]);
         requestAnimationFrame(render);

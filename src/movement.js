@@ -22,7 +22,7 @@ export function updateCamera(modelViewProjectionMatrix) {
     );
 
     let up = vec3.fromValues(0, 1, 0);
-    vec3.cross(right, forward,up );
+    vec3.cross(right, forward, up);
 
     let moveSpeed = 0.1;
     let movement = vec3.create();

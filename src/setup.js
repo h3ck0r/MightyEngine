@@ -38,9 +38,9 @@ export function createBindLayouts(device) {
 }
 
 export async function loadShaders(device) {
-    const mainShaderCode = await loadShader('main_shader.wgsl');
+    const mainShaderCode = await loadShader('shaders/main_shader.wgsl');
     const mainShaderModule = device.createShaderModule({ label: 'Shader', code: mainShaderCode });
-    const skyboxShaderCode = await loadShader('skybox_shader.wgsl');
+    const skyboxShaderCode = await loadShader('shaders/skybox_shader.wgsl');
     const skyboxShaderModule = device.createShaderModule({ label: 'Shader', code: skyboxShaderCode });
     return { mainShaderModule, skyboxShaderModule };
 }

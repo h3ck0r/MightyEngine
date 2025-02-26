@@ -16,7 +16,7 @@ export async function loadObjects(device, bindGroupLayout, mvpBuffer, globalLigh
         const obj = new GameObject();
         let val = Math.random();
         let referenceObj = null;
-        if(val > 0.9) {
+        if (val > 0.9) {
             referenceObj = eggObj;
         }
         else {
