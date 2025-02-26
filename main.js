@@ -44,7 +44,7 @@ export async function main() {
 
     const gameObjects = await loadObjects(device, mainBindGroupLayout, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer);
 
-    const { skyboxBuffer, indexBuffer, skyboxBindGroup } = await loadSkybox(device, skyboxBindGroupLayout);
+    const { skyboxBuffer, skyboxIndexBuffer, skyboxBindGroup } = await loadSkybox(device, skyboxBindGroupLayout, mvpBuffer, cameraPositionBuffer);
 
     const { mainPipeline, skyboxPipeline } = createPipeline(device, canvasFormat, mainShaderModule, skyboxShaderModule, mainBindGroupLayout, skyboxBindGroupLayout);
 
@@ -73,7 +73,7 @@ export async function main() {
         pass.setPipeline(skyboxPipeline);
         pass.setBindGroup(0, skyboxBindGroup);
         pass.setVertexBuffer(0, skyboxBuffer);
-        pass.setIndexBuffer(indexBuffer, "uint16");
+        pass.setIndexBuffer(skyboxIndexBuffer, "uint16");
         pass.drawIndexed(36);
 
         // game objects

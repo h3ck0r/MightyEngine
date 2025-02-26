@@ -25,7 +25,7 @@ async function loadCubemapTexture(device, imageUrls) {
 }
 
 
-export async function loadSkybox(device, skyboxBindGroupLayout) {
+export async function loadSkybox(device, skyboxBindGroupLayout, mvpBuffer, cameraPositionBuffer) {
     const skyboxVertices = new Float32Array([
         -1, -1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, // Back
         -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, // Front
@@ -50,11 +50,11 @@ export async function loadSkybox(device, skyboxBindGroupLayout) {
         20, 21, 22, 22, 23, 20
     ]);
 
-    const indexBuffer = device.createBuffer({
+    const skyboxIndexBuffer = device.createBuffer({
         size: skyboxIndices.byteLength,
         usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
     });
-    device.queue.writeBuffer(indexBuffer, 0, skyboxIndices);
+    device.queue.writeBuffer(skyboxIndexBuffer, 0, skyboxIndices);
 
     const skyboxImages = [
         "resources/spacecubemap/right.jpg",
@@ -70,14 +70,15 @@ export async function loadSkybox(device, skyboxBindGroupLayout) {
         magFilter: "linear",
         minFilter: "linear",
     });
-
     const skyboxBindGroup = device.createBindGroup({
         layout: skyboxBindGroupLayout,
         entries: [
-            { binding: 0, resource: sampler },
-            { binding: 1, resource: skyboxTexture.createView({ dimension: "cube" }) }
+            { binding: 0, resource: { buffer: mvpBuffer } },
+            { binding: 1, resource: { buffer: cameraPositionBuffer } },
+            { binding: 2, resource: sampler },
+            { binding: 3, resource: skyboxTexture.createView({ dimension: "cube" }) }
         ]
     });
 
-    return { skyboxBuffer, indexBuffer, skyboxBindGroup };
+    return { skyboxBuffer, skyboxIndexBuffer, skyboxBindGroup };
 }

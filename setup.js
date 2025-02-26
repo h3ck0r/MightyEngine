@@ -27,8 +27,10 @@ export function createBindLayouts(device) {
     });
     const skyboxBindGroupLayout = device.createBindGroupLayout({
         entries: [
-            { binding: 0, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 1, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float", viewDimension: "cube" } }
+            { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
+            { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
+            { binding: 2, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float", viewDimension: "cube" } }
         ]
     });
     return { mainBindGroupLayout, skyboxBindGroupLayout }
