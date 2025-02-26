@@ -5,7 +5,7 @@ export async function loadObjects(device, bindLayouts, buffers) {
     const gameObjects = [];
 
     const instance_count = 1;
-    let url = "resources/chicken";
+    let url = "resources/imp";
     const chickenObj = new GameObject();
     await chickenObj.addModel(url + "/model.glb", device);
     url = "resources/egg";
