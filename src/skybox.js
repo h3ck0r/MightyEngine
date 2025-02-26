@@ -25,7 +25,7 @@ async function loadCubemapTexture(device, imageUrls) {
 }
 
 
-export async function loadSkybox(device, skyboxBindGroupLayout, mvpBuffer, cameraPositionBuffer) {
+export async function loadSkybox(device, bindLayouts, buffers) {
     const skyboxVertices = new Float32Array([
         -1, -1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, // Back
         -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, // Front
@@ -71,10 +71,10 @@ export async function loadSkybox(device, skyboxBindGroupLayout, mvpBuffer, camer
         minFilter: "linear",
     });
     const skyboxBindGroup = device.createBindGroup({
-        layout: skyboxBindGroupLayout,
+        layout: bindLayouts.skyboxBindGroupLayout,
         entries: [
-            { binding: 0, resource: { buffer: mvpBuffer } },
-            { binding: 1, resource: { buffer: cameraPositionBuffer } },
+            { binding: 0, resource: { buffer: buffers.mvpBuffer } },
+            { binding: 1, resource: { buffer: buffers.cameraPositionBuffer } },
             { binding: 2, resource: sampler },
             { binding: 3, resource: skyboxTexture.createView({ dimension: "cube" }) }
         ]

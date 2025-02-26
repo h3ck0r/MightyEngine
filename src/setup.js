@@ -11,8 +11,27 @@ export const globals = {
     mouseSensitivity: 0.002,
 }
 
+export function createPostProcessResources(device, bindLayouts, sceneTextureView) {
+
+    const sceneSampler = device.createSampler({
+        magFilter: "linear",
+        minFilter: "linear",
+    });
+
+    const postProcessBindGroup = device.createBindGroup({
+        layout: bindLayouts.postProcessBindGroupLayout,
+        entries: [
+            { binding: 0, resource: sceneTextureView },
+            { binding: 1, resource: sceneSampler },
+        ],
+    });
+
+    return { postProcessBindGroup };
+}
+
 export function createBindLayouts(device) {
     const mainBindGroupLayout = device.createBindGroupLayout({
+        label: "Main Bind Group Layout",
         entries: [
             { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
             { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
@@ -27,6 +46,7 @@ export function createBindLayouts(device) {
         ]
     });
     const skyboxBindGroupLayout = device.createBindGroupLayout({
+        label: "Skybox Bind Group Layout",
         entries: [
             { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
             { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
@@ -34,18 +54,29 @@ export function createBindLayouts(device) {
             { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float", viewDimension: "cube" } }
         ]
     });
-    return { mainBindGroupLayout, skyboxBindGroupLayout }
+    const postProcessBindGroupLayout = device.createBindGroupLayout({
+        label: "Post-Processing Bind Group Layout",
+        entries: [
+            { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+        ]
+    });
+
+    return { mainBindGroupLayout, skyboxBindGroupLayout, postProcessBindGroupLayout };
+
 }
 
 export async function loadShaders(device) {
     const mainShaderCode = await loadShader('shaders/main_shader.wgsl');
-    const mainShaderModule = device.createShaderModule({ label: 'Shader', code: mainShaderCode });
+    const mainShaderModule = device.createShaderModule({ label: 'Main Shader', code: mainShaderCode });
     const skyboxShaderCode = await loadShader('shaders/skybox_shader.wgsl');
-    const skyboxShaderModule = device.createShaderModule({ label: 'Shader', code: skyboxShaderCode });
-    return { mainShaderModule, skyboxShaderModule };
+    const skyboxShaderModule = device.createShaderModule({ label: 'Skybox Shader', code: skyboxShaderCode });
+    const postprocessShaderCode = await loadShader('shaders/postprocess.wgsl');
+    const postProcessShaderModule = device.createShaderModule({ label: 'Postprocess Shader', code: postprocessShaderCode });
+    return { mainShaderModule, skyboxShaderModule, postProcessShaderModule };
 }
 
-export async function setupUI(device, globalLightDirectionBuffer) {
+export async function setupUI(device, buffers) {
     window.addEventListener("keydown", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = true; });
     window.addEventListener("keyup", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = false; });
     window.addEventListener("mousemove", (e) => {
@@ -68,15 +99,15 @@ export async function setupUI(device, globalLightDirectionBuffer) {
     const inputLightingZ = document.querySelector("#input-lighting-z input");
     inputLightingX.addEventListener("input", (e) => {
         globals.lightDirection[0] = e.target.value;
-        device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
+        device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
     });
     inputLightingY.addEventListener("input", (e) => {
         globals.lightDirection[1] = e.target.value;
-        device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
+        device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
     });
     inputLightingZ.addEventListener("input", (e) => {
         globals.lightDirection[2] = e.target.value;
-        device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
+        device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
     });
 
     const menuExitButton = document.getElementById("exit-button");
@@ -113,7 +144,6 @@ export async function setupCanvas() {
 }
 
 export async function setupBuffers(device) {
-    const modelViewProjectionMatrix = mat4.create();
     const mvpBuffer = device.createBuffer({
         label: "Uniform Buffer",
         size: 4 * 16,
@@ -133,7 +163,7 @@ export async function setupBuffers(device) {
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     device.queue.writeBuffer(cameraPositionBuffer, 0, globals.cameraPosition);
-    return { modelViewProjectionMatrix, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer }
+    return { mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer }
 }
 
 export async function createDepthTexture(device, canvas) {
@@ -170,5 +200,13 @@ export async function setup() {
 
     globals.aspect = canvas.width / canvas.height;
     if (!device || !context || !canvas || !canvasFormat) throw new Error('Failed to setup');
-    return { device, context, canvas, canvasFormat };
+
+    const sceneTexture = device.createTexture({
+        size: [canvas.width, canvas.height, 1],
+        format: canvasFormat,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
+    });
+    const sceneTextureView = sceneTexture.createView();
+
+    return { device, context, canvas, canvasFormat, sceneTextureView };
 }

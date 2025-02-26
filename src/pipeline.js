@@ -1,11 +1,11 @@
-export function createPipeline(device, canvasFormat, shaderModule, skyboxShaderModule, bindGroupLayout, skyboxBindGroupLayout) {
+export function createPipeline(device, canvasFormat, shaderModules, bindLayouts) {
     const mainPipeline = device.createRenderPipeline({
         label: "Pipeline",
         layout: device.createPipelineLayout({
-            bindGroupLayouts: [bindGroupLayout]
+            bindGroupLayouts: [bindLayouts.mainBindGroupLayout]
         }),
         vertex: {
-            module: shaderModule,
+            module: shaderModules.mainShaderModule,
             entryPoint: "vertexMain",
             buffers: [
                 {
@@ -20,7 +20,7 @@ export function createPipeline(device, canvasFormat, shaderModule, skyboxShaderM
             ]
         },
         fragment: {
-            module: shaderModule,
+            module: shaderModules.mainShaderModule,
             entryPoint: "fragmentMain",
             targets: [{
                 format: canvasFormat
@@ -36,10 +36,10 @@ export function createPipeline(device, canvasFormat, shaderModule, skyboxShaderM
     const skyboxPipeline = device.createRenderPipeline({
         label: "Skybox Pipeline",
         layout: device.createPipelineLayout({
-            bindGroupLayouts: [skyboxBindGroupLayout]
+            bindGroupLayouts: [bindLayouts.skyboxBindGroupLayout]
         }),
         vertex: {
-            module: skyboxShaderModule,
+            module: shaderModules.skyboxShaderModule,
             entryPoint: "vertexMain",
             buffers: [
                 {
@@ -51,7 +51,7 @@ export function createPipeline(device, canvasFormat, shaderModule, skyboxShaderM
             ]
         },
         fragment: {
-            module: skyboxShaderModule,
+            module: shaderModules.skyboxShaderModule,
             entryPoint: "fragmentMain",
             targets: [{
                 format: canvasFormat
@@ -63,7 +63,25 @@ export function createPipeline(device, canvasFormat, shaderModule, skyboxShaderM
             depthCompare: "less-equal"
         }
     });
+    const postProcessPipeline = device.createRenderPipeline({
+        label: "Post-Processing Pipeline",
+        layout: device.createPipelineLayout({
+            bindGroupLayouts: [bindLayouts.postProcessBindGroupLayout]
+        }),
+        vertex: {
+            module: shaderModules.postProcessShaderModule,
+            entryPoint: "vertexMain",
+            buffers: []
+        },
+        fragment: {
+            module: shaderModules.postProcessShaderModule,
+            entryPoint: "fragmentMain",
+            targets: [{
+                format: canvasFormat
+            }]
+        }
+    });
 
-    return { mainPipeline, skyboxPipeline };
+    return { mainPipeline, skyboxPipeline, postProcessPipeline };
 
 }
