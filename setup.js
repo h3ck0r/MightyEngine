@@ -1,3 +1,4 @@
+import { mat4 } from "gl-matrix";
 import { loadShader } from "./utils.js"
 
 export const globals = {
@@ -109,6 +110,40 @@ export async function setupCanvas() {
 
     const context = canvas.getContext('webgpu');
     return { canvas, context };
+}
+
+export async function setupBuffers(device) {
+    const modelViewProjectionMatrix = mat4.create();
+    const mvpBuffer = device.createBuffer({
+        label: "Uniform Buffer",
+        size: 4 * 16,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+
+    const globalLightDirectionBuffer = device.createBuffer({
+        label: "Global Light Direction Buffer",
+        size: 3 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
+
+    const cameraPositionBuffer = device.createBuffer({
+        label: "Camera Position Buffer",
+        size: 3 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    device.queue.writeBuffer(cameraPositionBuffer, 0, globals.cameraPosition);
+    return { modelViewProjectionMatrix, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer }
+}
+
+export async function createDepthTexture(device, canvas) {
+    const depthTexture = device.createTexture({
+        size: [canvas.width, canvas.height, 1],
+        format: "depth24plus",
+        usage: GPUTextureUsage.RENDER_ATTACHMENT
+    });
+    const depthView = depthTexture.createView();
+    return depthView
 }
 
 export async function setup() {

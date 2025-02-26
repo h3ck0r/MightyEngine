@@ -1,82 +1,39 @@
-import { mat4, vec3 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
 import { updateFPS } from "./ui.js";
 import { updateCamera } from "./movement.js"
-import { globals, loadShaders, setup, setupUI, createBindLayouts } from "./setup.js";
+import { globals, loadShaders, setup, setupUI, createBindLayouts, setupBuffers, createDepthTexture } from "./setup.js";
 import { createPipeline } from "./pipeline.js";
 import { loadObjects } from "./scene.js";
 import { loadSkybox } from "./skybox.js";
 
 export async function main() {
+    // setup
     const { device, context, canvas, canvasFormat } = await setup();
     const { mainShaderModule, skyboxShaderModule } = await loadShaders(device);
-
-    const modelViewProjectionMatrix = mat4.create();
-    const mvpBuffer = device.createBuffer({
-        label: "Uniform Buffer",
-        size: 4 * 16,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-    });
-
-    const globalLightDirectionBuffer = device.createBuffer({
-        label: "Global Light Direction Buffer",
-        size: 3 * 4,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-    device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);
-
-    const cameraPositionBuffer = device.createBuffer({
-        label: "Camera Position Buffer",
-        size: 3 * 4,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-    device.queue.writeBuffer(cameraPositionBuffer, 0, globals.cameraPosition);
-
+    const { modelViewProjectionMatrix, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer } = await setupBuffers(device);
+    const { mainBindGroupLayout, skyboxBindGroupLayout } = createBindLayouts(device);
+    const gameObjects = await loadObjects(device, mainBindGroupLayout, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer);
+    const { skyboxBuffer, skyboxIndexBuffer, skyboxBindGroup } = await loadSkybox(device, skyboxBindGroupLayout, mvpBuffer, cameraPositionBuffer);
+    const { mainPipeline, skyboxPipeline } = createPipeline(device, canvasFormat, mainShaderModule, skyboxShaderModule, mainBindGroupLayout, skyboxBindGroupLayout);
+    const depthView = await createDepthTexture(device, canvas);
     setupUI(device, globalLightDirectionBuffer);
 
-    const depthTexture = device.createTexture({
-        size: [canvas.width, canvas.height, 1],
-        format: "depth24plus",
-        usage: GPUTextureUsage.RENDER_ATTACHMENT
-    });
-    const depthView = depthTexture.createView();
-
-    const { mainBindGroupLayout, skyboxBindGroupLayout } = createBindLayouts(device);
-
-    const gameObjects = await loadObjects(device, mainBindGroupLayout, mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer);
-
-    const { skyboxBuffer, skyboxIndexBuffer, skyboxBindGroup } = await loadSkybox(device, skyboxBindGroupLayout, mvpBuffer, cameraPositionBuffer);
-
-    const { mainPipeline, skyboxPipeline } = createPipeline(device, canvasFormat, mainShaderModule, skyboxShaderModule, mainBindGroupLayout, skyboxBindGroupLayout);
-
-    function render() {
+    function update() {
         updateFPS();
         updateCamera(modelViewProjectionMatrix);
         device.queue.writeBuffer(mvpBuffer, 0, modelViewProjectionMatrix);
         device.queue.writeBuffer(cameraPositionBuffer, 0, globals.cameraPosition);
+    }
 
-        const encoder = device.createCommandEncoder();
-        const pass = encoder.beginRenderPass({
-            colorAttachments: [{
-                view: context.getCurrentTexture().createView(),
-                loadOp: "clear",
-                clearValue: { r: 0.15, g: 0.15, b: 0.2, a: 1 },
-                storeOp: "store"
-            }],
-            depthStencilAttachment: {
-                view: depthView,
-                depthLoadOp: "clear",
-                depthClearValue: 1.0,
-                depthStoreOp: "store"
-            }
-        });
-        // skybox
+    function renderSkybox(pass) {
         pass.setPipeline(skyboxPipeline);
         pass.setBindGroup(0, skyboxBindGroup);
         pass.setVertexBuffer(0, skyboxBuffer);
         pass.setIndexBuffer(skyboxIndexBuffer, "uint16");
         pass.drawIndexed(36);
+    }
 
-        // game objects
+    function renderObjects(pass) {
         pass.setPipeline(mainPipeline);
         for (let i = 0; i < gameObjects.length; i++) {
             const obj = gameObjects[i];
@@ -109,6 +66,29 @@ export async function main() {
             pass.setBindGroup(0, obj.bindGroup);
             pass.drawIndexed(obj.indices.length);
         }
+    }
+
+    function render() {
+        const encoder = device.createCommandEncoder();
+        const pass = encoder.beginRenderPass({
+            colorAttachments: [{
+                view: context.getCurrentTexture().createView(),
+                loadOp: "clear",
+                clearValue: { r: 0.15, g: 0.15, b: 0.2, a: 1 },
+                storeOp: "store"
+            }],
+            depthStencilAttachment: {
+                view: depthView,
+                depthLoadOp: "clear",
+                depthClearValue: 1.0,
+                depthStoreOp: "store"
+            }
+        });
+
+        update();
+        renderSkybox(pass);
+        renderObjects(pass);
+        
         pass.end();
         device.queue.submit([encoder.finish()]);
         requestAnimationFrame(render);
