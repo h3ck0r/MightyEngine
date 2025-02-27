@@ -4,7 +4,6 @@ import { globals } from "./setup";
 export function updateCamera(modelViewProjectionMatrix) {
     globals.cameraRotation[0] = -globals.mouseDelta.y;
     globals.cameraRotation[1] = -globals.mouseDelta.x;
-    globals.cameraRotation[0] = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, globals.cameraRotation[0]));
 
     let yaw = globals.cameraRotation[1];
     let pitch = globals.cameraRotation[0];

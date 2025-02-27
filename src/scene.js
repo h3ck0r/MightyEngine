@@ -1,4 +1,3 @@
-import { vec3 } from "gl-matrix";
 import { GameObject } from "./game-object.js";
 
 export async function loadObjects(device, bindLayouts, buffers) {

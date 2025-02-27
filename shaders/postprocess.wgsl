@@ -29,6 +29,35 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
     return output;
 }
 
+@fragment
+fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
+    // let uvWarped = crtWarp(input.uv);
+    var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
+    // color = chromaticAberration(uvWarped,0.0001);
+    // color += motionBlur(uvWarped);
+    color = applyExposure(color);
+    // color = stylizedShadows(color);
+    // color = scanlines(uvWarped, color);
+    color += randomNoise(input.uv) * 0.01; 
+    // color = posterize(color, .0);
+    // color = vignette(uvWarped, color);
+    // color += invertColor(color)*0.00001;
+
+    return vec4<f32>(color, 1.0);
+}
+
+
+//  ▄█    █▄   ▄█     ▄████████ ███    █▄     ▄████████  ▄█               ▄████████    ▄█    █▄       ▄████████ ████████▄     ▄████████    ▄████████    ▄████████ 
+// ███    ███ ███    ███    ███ ███    ███   ███    ███ ███              ███    ███   ███    ███     ███    ███ ███   ▀███   ███    ███   ███    ███   ███    ███ 
+// ███    ███ ███▌   ███    █▀  ███    ███   ███    ███ ███              ███    █▀    ███    ███     ███    ███ ███    ███   ███    █▀    ███    ███   ███    █▀  
+// ███    ███ ███▌   ███        ███    ███   ███    ███ ███              ███         ▄███▄▄▄▄███▄▄   ███    ███ ███    ███  ▄███▄▄▄      ▄███▄▄▄▄██▀   ███        
+// ███    ███ ███▌ ▀███████████ ███    ███ ▀███████████ ███            ▀███████████ ▀▀███▀▀▀▀███▀  ▀███████████ ███    ███ ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ▀███████████ 
+// ███    ███ ███           ███ ███    ███   ███    ███ ███                     ███   ███    ███     ███    ███ ███    ███   ███    █▄  ▀███████████          ███ 
+// ███    ███ ███     ▄█    ███ ███    ███   ███    ███ ███▌    ▄         ▄█    ███   ███    ███     ███    ███ ███   ▄███   ███    ███   ███    ███    ▄█    ███ 
+//  ▀██████▀  █▀    ▄████████▀  ████████▀    ███    █▀  █████▄▄██       ▄████████▀    ███    █▀      ███    █▀  ████████▀    ██████████   ███    ███  ▄████████▀  
+//                                                      ▀                                                                                 ███    ███              
+
+
 fn applyExposure(color: vec3<f32>) -> vec3<f32> {
     return color * 1.2;
 }
@@ -109,21 +138,4 @@ fn softGlow(uv: vec2<f32>) -> vec3<f32> {
 fn enhanceContrast(color: vec3<f32>) -> vec3<f32> {
     let contrastFactor = 1.2; 
     return mix(vec3<f32>(0.5), color, contrastFactor);
-}
-
-@fragment
-fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
-    // let uvWarped = crtWarp(input.uv);
-    var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
-    // color = chromaticAberration(uvWarped,0.0001);
-    // color += motionBlur(uvWarped);
-    color = applyExposure(color);
-    color = stylizedShadows(color);
-    // color = scanlines(uvWarped, color);
-    color += randomNoise(input.uv) * 0.01; 
-    // color = posterize(color, .0);
-    // color = vignette(uvWarped, color);
-    // color += invertColor(color)*0.00001;
-
-    return vec4<f32>(color, 1.0);
 }

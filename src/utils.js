@@ -78,3 +78,27 @@ export async function loadShader(url) {
     const response = await fetch(url);
     return await response.text();
 }
+
+export function createRenderPass(encoder, textureView, depthView) {
+    let colorAttachments = [{
+        view: textureView,
+        loadOp: "clear",
+        clearValue: { r: 0.15, g: 0.15, b: 0.2, a: 1 },
+        storeOp: "store"
+    }];
+
+    let renderPassDescriptor = {
+        colorAttachments: colorAttachments
+    };
+
+    if (depthView) {
+        renderPassDescriptor.depthStencilAttachment = {
+            view: depthView,
+            depthLoadOp: "clear",
+            depthClearValue: 1.0,
+            depthStoreOp: "store"
+        };
+    }
+
+    return encoder.beginRenderPass(renderPassDescriptor);
+}
