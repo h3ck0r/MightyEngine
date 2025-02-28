@@ -1,3 +1,4 @@
+import { vec3 } from "gl-matrix";
 import { GameObject } from "./game-object.js";
 
 export async function loadObjects(device, bindLayouts, buffers) {
@@ -25,6 +26,7 @@ export async function loadObjects(device, bindLayouts, buffers) {
             obj.vertexBuffer = model.vertexBuffer;
             obj.indexBuffer = model.indexBuffer;
             obj.indices = model.indices;
+            obj.position = vec3.fromValues(1.0, 0.0, 10.0);
 
             obj.modelUniformBuffer = device.createBuffer({
                 label: "Model Matrix Buffer",

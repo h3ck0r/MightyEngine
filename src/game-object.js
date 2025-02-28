@@ -1,6 +1,5 @@
 import { loadGLTFModel } from "./utils.js"
 import { mat4, vec3 } from "gl-matrix";
-import * as THREE from 'three';
 
 export class GameObject {
     constructor() {

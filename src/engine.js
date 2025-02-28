@@ -76,15 +76,23 @@ export class Engine {
                 );
             }
 
+            // if (!obj.rotationVelocity) {
+            //     obj.rotationVelocity = vec3.fromValues(
+            //         (Math.random() - 0.5) * 0.002,
+            //         (Math.random() - 0.5) * 0.002,
+            //         (Math.random() - 0.5) * 0.002
+            //     );
+            // }
+
             if (!obj.rotationVelocity) {
                 obj.rotationVelocity = vec3.fromValues(
-                    (Math.random() - 0.5) * 0.002,
-                    (Math.random() - 0.5) * 0.002,
-                    (Math.random() - 0.5) * 0.002
+                    0.0,
+                    0.005,
+                    0.0
                 );
             }
 
-            // vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
+            vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
             // vec3.add(obj.position, obj.position, obj.velocity);
 
             obj.updateTransform();

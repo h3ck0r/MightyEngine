@@ -99,7 +99,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let texColor = textureSample(textureImage, samplerLoader, input.fragUV);
     let normalSample = textureSample(normalImage, normalLoader, input.fragUV).rgb * 2.0 - 1.0;
     let roughnessSample = textureSample(roughnessImage, roughnessLoader, input.fragUV);
-    let metalness = textureSample(metalnessImage, metalnessLoader, input.fragUV).b;
+    let metalness = textureSample(metalnessImage, metalnessLoader, input.fragUV).g;
     let specularColor = textureSample(specularColorImage, specularColorLoader, input.fragUV).rgb;
 
     let roughness = roughnessSample.g;
@@ -113,7 +113,8 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let halfwayDir = normalize(lightDir + viewDir);
 
     let dielectricF0 = vec3<f32>(0.04);
-    let F0 = mix(dielectricF0, specularColor, metalness);  
+    let aoFactor = mix(vec3<f32>(1.0), vec3<f32>(ao), metalness);  
+    let F0 = mix(dielectricF0, specularColor, metalness) * aoFactor;
     
     let NDF = distributionGGX(mappedNormal, halfwayDir, roughness);
     let G = geometrySmith(mappedNormal, viewDir, lightDir, roughness);
@@ -121,12 +122,14 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     
     let numerator = NDF * G * fresnel;
     let denominator = 4.0 * max(dot(mappedNormal, viewDir), 0.0) * max(dot(mappedNormal, lightDir), 0.0) + 0.0001;
-    let specular = (numerator / denominator) * specularColor;
+    let specular = (numerator / denominator) ;
 
     let kD = vec3<f32>(1.0) - fresnel;
     let diffuse = kD * texColor.rgb * max(dot(mappedNormal, lightDir), 0.0) * ao; 
 
     let finalColor = diffuse + specular;
-
+    let gammaCorrected = pow(finalColor, vec3<f32>(1.0 / 2.2));
     return vec4<f32>(finalColor, texColor.a);
 }
+
+

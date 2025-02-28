@@ -35,7 +35,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     // var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
     var color = chromaticAberration(input.uv,0.0003);
     // color += motionBlur(input.uv);
-    color = applyExposure(color);
+    // color = applyExposure(color);
     // color = stylizedShadows(color);
     // color = scanlines(input.uv, color);
     // color = scanlines2(input.uv, color);
