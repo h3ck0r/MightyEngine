@@ -32,15 +32,16 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
 @fragment
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     // let uvWarped = crtWarp(input.uv);
-    var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
-    // color = chromaticAberration(uvWarped,0.0001);
-    // color += motionBlur(uvWarped);
+    // var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
+    var color = chromaticAberration(input.uv,0.0003);
+    // color += motionBlur(input.uv);
     color = applyExposure(color);
     // color = stylizedShadows(color);
-    // color = scanlines(uvWarped, color);
-    color += randomNoise(input.uv) * 0.01; 
-    // color = posterize(color, .0);
-    // color = vignette(uvWarped, color);
+    // color = scanlines(input.uv, color);
+    // color = scanlines2(input.uv, color);
+    color += randomNoise(input.uv) * 0.05; 
+    color = posterize(color, 12);
+    color = vignette(input.uv, color);
     // color += invertColor(color)*0.00001;
 
     return vec4<f32>(color, 1.0);
@@ -59,7 +60,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
 
 
 fn applyExposure(color: vec3<f32>) -> vec3<f32> {
-    return color * 1.2;
+    return color * 2;
 }
 fn extractBright(color: vec3<f32>) -> vec3<f32> {
     return max(color - vec3<f32>(0.7, 0.7, 0.7), vec3<f32>(0.0));
@@ -71,8 +72,8 @@ fn vignette(uv: vec2<f32>, color: vec3<f32>) -> vec3<f32> {
 }
 fn chromaticAberration(uv: vec2<f32>, intensity: f32) -> vec3<f32> {
     let r = textureSample(sceneTexture, sceneSampler, uv + vec2<f32>(intensity, 0.0)).r;
-    let g = textureSample(sceneTexture, sceneSampler, uv).g;
-    let b = textureSample(sceneTexture, sceneSampler, uv - vec2<f32>(intensity, 0.0)).b;
+    let g = textureSample(sceneTexture, sceneSampler, uv - vec2<f32>(intensity, 0.0)).g;
+    let b = textureSample(sceneTexture, sceneSampler, uv).b;
     return vec3<f32>(r, g, b);
 }
 fn randomNoise(uv: vec2<f32>) -> f32 {
@@ -83,6 +84,10 @@ fn invertColor(color: vec3<f32>) -> vec3<f32> {
 }
 fn scanlines(uv: vec2<f32>, color: vec3<f32>) -> vec3<f32> {
     let scanline = sin(uv.y * 800.0) * 0.05; 
+    return color * (1.0 - scanline);
+}
+fn scanlines2(uv: vec2<f32>, color: vec3<f32>) -> vec3<f32> {
+    let scanline = cos(uv.y * 800.0) * 0.05; 
     return color * (1.0 - scanline);
 }
 fn posterize(color: vec3<f32>, levels: f32) -> vec3<f32> {

@@ -4,25 +4,27 @@ export async function loadGLTFModel(url) {
     return new Promise((resolve, reject) => {
         const loader = new GLTFLoader();
         loader.load(url, (gltf) => {
-            const vertices = [];
-            const indices = [];
-            let material = null;
-            let indexOffset = 0;
+            const meshes = [];
 
             gltf.scene.traverse((child) => {
+                console.log(child)
                 if (child.isMesh) {
-                    material = child.material ? child.material : null;
+                    const vertices = [];
+                    const indices = [];
+                    let indexOffset = 0;
+
                     const position = child.geometry.attributes.position.array;
                     const normal = child.geometry.attributes.normal ? child.geometry.attributes.normal.array : null;
                     const uv = child.geometry.attributes.uv ? child.geometry.attributes.uv.array : null;
                     const index = child.geometry.index ? child.geometry.index.array : null;
                     const tangent = child.geometry.attributes.tangent ? child.geometry.attributes.tangent.array : null;
+                    const material = child.material || null;
 
                     for (let i = 0; i < position.length; i += 3) {
                         vertices.push(
                             position[i], position[i + 1], position[i + 2],
                             normal ? normal[i] : 0, normal ? normal[i + 1] : 0, normal ? normal[i + 2] : 1,
-                            uv ? uv[i / 3 * 2] : 0, uv ? uv[i / 3 * 2 + 1] : 0,
+                            uv ? uv[(i / 3) * 2] : 0, uv ? uv[(i / 3) * 2 + 1] : 0,
                             tangent ? tangent[i] : 1, tangent ? tangent[i + 1] : 0, tangent ? tangent[i + 2] : 0, tangent ? tangent[i + 3] : 1
                         );
                     }
@@ -34,17 +36,20 @@ export async function loadGLTFModel(url) {
                     }
 
                     indexOffset += position.length / 3;
+
+                    meshes.push({
+                        vertices: new Float32Array(vertices),
+                        indices: new Uint32Array(indices),
+                        material
+                    });
                 }
             });
 
-            resolve({
-                vertices: new Float32Array(vertices),
-                indices: new Uint32Array(indices),
-                material
-            });
+            resolve(meshes);
         }, undefined, reject);
     });
 }
+
 
 export async function loadTexture(device, url) {
     const response = await fetch(url);

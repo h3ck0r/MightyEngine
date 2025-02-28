@@ -11,41 +11,65 @@ export class GameObject {
         mat4.identity(this.modelMatrix);
     }
     async addModel(url, device) {
-        const modelData = await loadGLTFModel(url);
-        this.vertices = modelData.vertices;
-        this.indices = modelData.indices;
+        const objs = await loadGLTFModel(url);
 
-        const material = modelData.material;
+        this.models = [];
+        for (const obj of objs) {
+            const modelData = obj;
 
-        const albedoBitMap = material.map?.source.data;
-        const albedoData = albedoBitMap ? this.loadTexture(device, albedoBitMap) : this.createDefaultTexture(device, [255, 255, 255, 255]);
-        this.albedoTexture = albedoData.texture;
-        this.albedoSampler = albedoData.sampler;
+            const vertices = modelData.vertices;
+            const indices = modelData.indices;
+            const material = modelData.material;
 
-        const normalBitMap = material.normalMap?.source.data;
-        const normalData = normalBitMap ? this.loadTexture(device, normalBitMap) : this.createDefaultTexture(device, [128, 128, 255, 255]);
-        this.normalTexture = normalData.texture;
-        this.normalSampler = normalData.sampler;
+            const albedoBitMap = material.map?.source.data;
+            const albedoData = albedoBitMap ? this.loadTexture(device, albedoBitMap) : this.createDefaultTexture(device, [200, 200, 200, 255]);
 
-        const roughnessBitMap = material.roughnessMap?.source.data;
-        const roughnessData = roughnessBitMap ? this.loadTexture(device, roughnessBitMap) : this.createDefaultTexture(device, [255, 255, 255, 255]);
-        this.roughnessTexture = roughnessData.texture;
-        this.roughnessSampler = roughnessData.sampler;
+            const normalBitMap = material.normalMap?.source.data;
+            const normalData = normalBitMap ? this.loadTexture(device, normalBitMap) : this.createDefaultTexture(device, [128, 128, 255, 255]);
 
-        this.vertexBuffer = device.createBuffer({
-            label: "Vertex Buffer",
-            size: this.vertices.length * 4,
-            usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-        });
-        device.queue.writeBuffer(this.vertexBuffer, 0, this.vertices);
+            const roughnessBitMap = material.roughnessMap?.source.data;
+            const roughnessData = roughnessBitMap ? this.loadTexture(device, roughnessBitMap) : this.createDefaultTexture(device, [128, 128, 128, 255]);
 
-        this.indexBuffer = device.createBuffer({
-            label: "Index Buffer",
-            size: this.indices.length * 4,
-            usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
-        });
-        device.queue.writeBuffer(this.indexBuffer, 0, this.indices);
+            const metalnessBitMap = material.metalnessMap?.source.data;
+            const metalnessData = metalnessBitMap ? this.loadTexture(device, metalnessBitMap) : this.createDefaultTexture(device, [0, 0, 0, 255]);
+
+            const specularColorBitMap = material.specularColorMap?.source.data;
+            const specularColorData = specularColorBitMap ? this.loadTexture(device, specularColorBitMap) : this.createDefaultTexture(device, [64, 64, 64, 255]);
+
+            const vertexBuffer = device.createBuffer({
+                label: "Vertex Buffer",
+                size: vertices.length * 4,
+                usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+            });
+            device.queue.writeBuffer(vertexBuffer, 0, vertices);
+
+            const indexBuffer = device.createBuffer({
+                label: "Index Buffer",
+                size: indices.length * 4,
+                usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
+            });
+            device.queue.writeBuffer(indexBuffer, 0, indices);
+
+            // Store object data
+            this.models.push({
+                vertices,
+                indices,
+                albedoTexture: albedoData.texture,
+                albedoSampler: albedoData.sampler,
+                normalTexture: normalData.texture,
+                normalSampler: normalData.sampler,
+                roughnessTexture: roughnessData.texture,
+                roughnessSampler: roughnessData.sampler,
+                metalnessTexture: metalnessData.texture,
+                metalnessSampler: metalnessData.sampler,
+                specularColorTexture: specularColorData.texture,
+                specularColorSampler: specularColorData.sampler,
+                vertexBuffer,
+                indexBuffer
+            });
+        }
     }
+
     updateTransform() {
         mat4.identity(this.modelMatrix);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.position);

@@ -13,6 +13,10 @@ export function createBindLayouts(device) {
             { binding: 7, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
             { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
             { binding: 9, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 11, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 12, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 13, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
         ]
     });
     const skyboxBindGroupLayout = device.createBindGroupLayout({

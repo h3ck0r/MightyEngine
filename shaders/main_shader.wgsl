@@ -9,33 +9,37 @@ struct VertexOutput {
 
 @group(0) @binding(0)
 var<uniform> modelViewProjection: mat4x4<f32>;
-
 @group(0) @binding(1)
 var<uniform> modelMatrix: mat4x4<f32>;  
-
 @group(0) @binding(2)
 var<uniform> cameraPosition: vec3<f32>;
-
 @group(0) @binding(3)
 var<uniform> lightDirection: vec3<f32>;
 
 @group(0) @binding(4)
 var textureImage: texture_2d<f32>;
-
 @group(0) @binding(5)
 var samplerLoader: sampler;
 
 @group(0) @binding(6)
 var normalImage: texture_2d<f32>;
-
 @group(0) @binding(7)
 var normalLoader: sampler;
 
 @group(0) @binding(8)
 var roughnessImage: texture_2d<f32>;
-
 @group(0) @binding(9)
 var roughnessLoader: sampler;
+
+@group(0) @binding(10)
+var metalnessImage: texture_2d<f32>;
+@group(0) @binding(11)
+var metalnessLoader: sampler;
+
+@group(0) @binding(12)
+var specularColorImage: texture_2d<f32>;
+@group(0) @binding(13)
+var specularColorLoader: sampler;
 
 
 @vertex
@@ -95,6 +99,9 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let texColor = textureSample(textureImage, samplerLoader, input.fragUV);
     let normalSample = textureSample(normalImage, normalLoader, input.fragUV).rgb * 2.0 - 1.0;
     let roughnessSample = textureSample(roughnessImage, roughnessLoader, input.fragUV);
+    let metalness = textureSample(metalnessImage, metalnessLoader, input.fragUV).b;
+    let specularColor = textureSample(specularColorImage, specularColorLoader, input.fragUV).rgb;
+
     let roughness = roughnessSample.g;
     let ao = roughnessSample.r; 
 
@@ -105,7 +112,8 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let viewDir = normalize(cameraPosition - input.worldPos);
     let halfwayDir = normalize(lightDir + viewDir);
 
-    let F0 = vec3<f32>(0.04);
+    let dielectricF0 = vec3<f32>(0.04);
+    let F0 = mix(dielectricF0, specularColor, metalness);  
     
     let NDF = distributionGGX(mappedNormal, halfwayDir, roughness);
     let G = geometrySmith(mappedNormal, viewDir, lightDir, roughness);
@@ -113,10 +121,10 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     
     let numerator = NDF * G * fresnel;
     let denominator = 4.0 * max(dot(mappedNormal, viewDir), 0.0) * max(dot(mappedNormal, lightDir), 0.0) + 0.0001;
-    let specular = numerator / denominator;
+    let specular = (numerator / denominator) * specularColor;
 
     let kD = vec3<f32>(1.0) - fresnel;
-    let diffuse = kD * texColor.rgb * max(dot(mappedNormal, lightDir), 0.0)*ao; 
+    let diffuse = kD * texColor.rgb * max(dot(mappedNormal, lightDir), 0.0) * ao; 
 
     let finalColor = diffuse + specular;
 
