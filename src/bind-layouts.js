@@ -17,6 +17,7 @@ export function createBindLayouts(device) {
             { binding: 11, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
             { binding: 12, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
             { binding: 13, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            
         ]
     });
     const skyboxBindGroupLayout = device.createBindGroupLayout({
@@ -35,7 +36,16 @@ export function createBindLayouts(device) {
             { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
         ]
     });
+    const pointLightBindGroupLayout = device.createBindGroupLayout({
+        label: "Point Light Bind Group Layout",
+        entries: [
+            { binding: 0, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
+            { binding: 1, visibility: GPUShaderStage.VERTEX, buffer: { type: "uniform" } },
+            { binding: 2, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }
+        ]
+    });
 
-    return { mainBindGroupLayout, skyboxBindGroupLayout, postProcessBindGroupLayout };
+
+    return { mainBindGroupLayout, skyboxBindGroupLayout, postProcessBindGroupLayout, pointLightBindGroupLayout };
 
 }

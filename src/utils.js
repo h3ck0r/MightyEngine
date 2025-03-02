@@ -7,7 +7,6 @@ export async function loadGLTFModel(url) {
             const meshes = [];
 
             gltf.scene.traverse((child) => {
-                console.log(child)
                 if (child.isMesh) {
                     const vertices = [];
                     const indices = [];
@@ -84,10 +83,10 @@ export async function loadShader(url) {
     return await response.text();
 }
 
-export function createRenderPass(encoder, textureView, depthView) {
+export function createRenderPass(encoder, textureView, depthView = null, clearColor = true, clearDepth = true) {
     let colorAttachments = [{
         view: textureView,
-        loadOp: "clear",
+        loadOp: clearColor ? "clear" : "load", 
         clearValue: { r: 0.15, g: 0.15, b: 0.2, a: 1 },
         storeOp: "store"
     }];
@@ -99,7 +98,7 @@ export function createRenderPass(encoder, textureView, depthView) {
     if (depthView) {
         renderPassDescriptor.depthStencilAttachment = {
             view: depthView,
-            depthLoadOp: "clear",
+            depthLoadOp: clearDepth ? "clear" : "load",
             depthClearValue: 1.0,
             depthStoreOp: "store"
         };
@@ -107,3 +106,4 @@ export function createRenderPass(encoder, textureView, depthView) {
 
     return encoder.beginRenderPass(renderPassDescriptor);
 }
+

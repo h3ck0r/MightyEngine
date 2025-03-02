@@ -1,6 +1,47 @@
 import { vec3 } from "gl-matrix";
 import { GameObject } from "./game-object.js";
 
+export async function loadPointLightObjects(device, bindLayouts, buffers) {
+    const pointLightObjects = [];
+
+    const pointLightObject = new GameObject(device);
+    pointLightObject.makeDefaultSphere();
+    for (const model of pointLightObject.models) {
+        const obj = new GameObject(device);
+        obj.vertexBuffer = model.vertexBuffer;
+        obj.indexBuffer = model.indexBuffer;
+        obj.indices = model.indices;
+        obj.position = vec3.fromValues(-2.0, 0.0, 0.0);
+        obj.scale = vec3.fromValues(0.5,0.5,0.5);
+        obj.modelMatrixBuffer = device.createBuffer({
+            label: "Model Matrix Buffer",
+            size: 4 * 16,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        const lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);
+        obj.colorBuffer = device.createBuffer({
+            label: "Point Light Color Buffer",
+            size: 4 * 4,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        device.queue.writeBuffer(obj.colorBuffer, 0, lightColor);
+
+        obj.bindGroup = device.createBindGroup({
+            layout: bindLayouts.pointLightBindGroupLayout,
+            entries: [
+                { binding: 0, resource: { buffer: buffers.mvpBuffer } },
+                { binding: 1, resource: { buffer: obj.modelMatrixBuffer } },
+                { binding: 2, resource: { buffer: obj.colorBuffer } }
+            ]
+        });
+
+        pointLightObjects.push(obj);
+    }
+
+    return pointLightObjects;
+}
+
+
 export async function loadObjects(device, bindLayouts, buffers) {
     const gameObjects = [];
     const instance_count = 1;
@@ -11,7 +52,7 @@ export async function loadObjects(device, bindLayouts, buffers) {
 
     const gameObjectMap = {};
     for (const modelInfo of modelPaths) {
-        const gameObject = new GameObject();
+        const gameObject = new GameObject(device);
         await gameObject.addModel(modelInfo.url, device);
         gameObjectMap[modelInfo.name] = gameObject;
     }
@@ -20,15 +61,14 @@ export async function loadObjects(device, bindLayouts, buffers) {
         const modelKeys = Object.keys(gameObjectMap);
         const selectedModelKey = modelKeys[Math.floor(Math.random() * modelKeys.length)];
         const referenceObj = gameObjectMap[selectedModelKey];
-
         for (const model of referenceObj.models) {
             const obj = new GameObject();
             obj.vertexBuffer = model.vertexBuffer;
             obj.indexBuffer = model.indexBuffer;
             obj.indices = model.indices;
-            obj.position = vec3.fromValues(1.0, 0.0, 10.0);
+            obj.position = vec3.fromValues(4.0, 0.0, 1.0);
 
-            obj.modelUniformBuffer = device.createBuffer({
+            obj.modelMatrixBuffer = device.createBuffer({
                 label: "Model Matrix Buffer",
                 size: 4 * 16,
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
@@ -38,7 +78,7 @@ export async function loadObjects(device, bindLayouts, buffers) {
                 layout: bindLayouts.mainBindGroupLayout,
                 entries: [
                     { binding: 0, resource: { buffer: buffers.mvpBuffer } },
-                    { binding: 1, resource: { buffer: obj.modelUniformBuffer } },
+                    { binding: 1, resource: { buffer: obj.modelMatrixBuffer } },
                     { binding: 2, resource: { buffer: buffers.cameraPositionBuffer } },
                     { binding: 3, resource: { buffer: buffers.globalLightDirectionBuffer } },
                     { binding: 4, resource: model.albedoTexture.createView() },

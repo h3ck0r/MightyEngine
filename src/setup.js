@@ -10,6 +10,7 @@ export const globals = {
     mouseSensitivity: 0.002,
 }
 
+
 export function createPostProcessResources(device, bindLayouts, sceneTextureView) {
 
     const sceneSampler = device.createSampler({
@@ -29,13 +30,15 @@ export function createPostProcessResources(device, bindLayouts, sceneTextureView
 }
 
 export async function loadShaders(device) {
-    const mainShaderCode = await loadShader('shaders/main_shader.wgsl');
+    const mainShaderCode = await loadShader('shaders/main-shader.wgsl');
     const mainShaderModule = device.createShaderModule({ label: 'Main Shader', code: mainShaderCode });
-    const skyboxShaderCode = await loadShader('shaders/skybox_shader.wgsl');
+    const skyboxShaderCode = await loadShader('shaders/skybox-shader.wgsl');
     const skyboxShaderModule = device.createShaderModule({ label: 'Skybox Shader', code: skyboxShaderCode });
     const postprocessShaderCode = await loadShader('shaders/postprocess.wgsl');
     const postProcessShaderModule = device.createShaderModule({ label: 'Postprocess Shader', code: postprocessShaderCode });
-    return { mainShaderModule, skyboxShaderModule, postProcessShaderModule };
+    const pointLightShaderCode = await loadShader('shaders/point-light.wgsl');
+    const pointLightShaderModule = device.createShaderModule({ label: 'Point Light Shader', code: pointLightShaderCode });
+    return { mainShaderModule, skyboxShaderModule, postProcessShaderModule, pointLightShaderModule };
 }
 
 export async function setupUI(device, buffers) {
@@ -45,7 +48,7 @@ export async function setupUI(device, buffers) {
         if (document.pointerLockElement) {
             globals.mouseDelta.x += e.movementX * globals.mouseSensitivity;
             globals.mouseDelta.y += e.movementY * globals.mouseSensitivity;
-            
+
             globals.mouseDelta.y = Math.max(-1.3, Math.min(1.3, globals.mouseDelta.y));
         }
     });

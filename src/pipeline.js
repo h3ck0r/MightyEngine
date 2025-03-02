@@ -43,7 +43,7 @@ export function createPipeline(device, canvasFormat, shaderModules, bindLayouts)
             entryPoint: "vertexMain",
             buffers: [
                 {
-                    arrayStride: 4 * 3,
+                    arrayStride: 3 * 4,
                     attributes: [
                         { shaderLocation: 0, offset: 0, format: "float32x3" }
                     ]
@@ -82,6 +82,38 @@ export function createPipeline(device, canvasFormat, shaderModules, bindLayouts)
         }
     });
 
-    return { mainPipeline, skyboxPipeline, postProcessPipeline };
+    const pointLightPipeline = device.createRenderPipeline({
+        label: "Point Light Pipeline",
+        layout: device.createPipelineLayout({
+            bindGroupLayouts: [bindLayouts.pointLightBindGroupLayout]
+        }),
+        vertex: {
+            module: shaderModules.pointLightShaderModule,
+            entryPoint: "vertexMain",
+            buffers: [
+                {
+                    arrayStride: 3 * 4,
+                    attributes: [
+                        { format: "float32x3", offset: 0, shaderLocation: 0 }
+                    ]
+                }
+            ]
+        },
+        fragment: {
+            module: shaderModules.pointLightShaderModule,
+            entryPoint: "fragmentMain",
+            targets: [{
+                format: canvasFormat
+            }]
+        },
+        depthStencil: {
+            format: "depth24plus",
+            depthWriteEnabled: false,
+            depthCompare: "less"
+        }
+    });
+
+
+    return { mainPipeline, skyboxPipeline, postProcessPipeline, pointLightPipeline };
 
 }
