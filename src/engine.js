@@ -119,9 +119,9 @@ export class Engine {
 
             // if (!obj.rotationVelocity) {
             //     obj.rotationVelocity = vec3.fromValues(
-            //         0.0,
-            //         0.005,
-            //         0.0
+            //         (Math.random() - 0.5) * 0.01,
+            //         (Math.random() - 0.5) * 0.01,
+            //         (Math.random() - 0.5) * 0.01,
             //     );
             // }
 
