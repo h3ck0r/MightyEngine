@@ -36,11 +36,11 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     var color = chromaticAberration(input.uv,0.0004);
     // color += motionBlur(input.uv);
     // color = applyExposure(color);
-    // color = stylizedShadows(color);
+    color = stylizedShadows(color);
     // color = scanlines(input.uv, color);
     // color = scanlines2(input.uv, color);
-    // color += randomNoise(input.uv) * 0.05; 
-    // color = posterize(color, 12);
+    color += randomNoise(input.uv) * 0.05; 
+    color = posterize(color, 12);
     // color = vignette(input.uv, color);
     // color += invertColor(color)*0.00001;
 

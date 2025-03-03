@@ -10,6 +10,7 @@ export class GameObject {
         this.defaultColor = new Float32Array([1, 1, 1]);
         this.models = [];
         this.device = device;
+        this.radius = 10;
         mat4.identity(this.modelMatrix);
     }
     async addModel(url) {
@@ -23,19 +24,19 @@ export class GameObject {
             const material = modelData.material;
 
             const albedoBitMap = material.map?.source.data;
-            const albedoData = albedoBitMap ? this.loadTexture(albedoBitMap) : this.createDefaultTexture(this.device, [200, 200, 200, 255]);
+            const albedoData = albedoBitMap ? this.loadTexture(albedoBitMap) : this.createDefaultTexture([200, 200, 200, 255]);
 
             const normalBitMap = material.normalMap?.source.data;
-            const normalData = normalBitMap ? this.loadTexture(normalBitMap) : this.createDefaultTexture(this.device, [128, 128, 255, 255]);
+            const normalData = normalBitMap ? this.loadTexture(normalBitMap) : this.createDefaultTexture([128, 128, 255, 255]);
 
             const roughnessBitMap = material.roughnessMap?.source.data;
-            const roughnessData = roughnessBitMap ? this.loadTexture(roughnessBitMap) : this.createDefaultTexture(this.device, [128, 128, 128, 255]);
+            const roughnessData = roughnessBitMap ? this.loadTexture(roughnessBitMap) : this.createDefaultTexture([128, 128, 128, 255]);
 
             const metalnessBitMap = material.metalnessMap?.source.data;
-            const metalnessData = metalnessBitMap ? this.loadTexture(metalnessBitMap) : this.createDefaultTexture(this.device, [0, 0, 0, 255]);
+            const metalnessData = metalnessBitMap ? this.loadTexture(metalnessBitMap) : this.createDefaultTexture([0, 0, 0, 255]);
 
             const specularColorBitMap = material.specularColorMap?.source.data;
-            const specularColorData = specularColorBitMap ? this.loadTexture(specularColorBitMap) : this.createDefaultTexture(this.device, [64, 64, 64, 255]);
+            const specularColorData = specularColorBitMap ? this.loadTexture(specularColorBitMap) : this.createDefaultTexture([64, 64, 64, 255]);
 
             const vertexBuffer = this.device.createBuffer({
                 label: "Vertex Buffer",
@@ -96,19 +97,20 @@ export class GameObject {
         return { texture, sampler };
     }
 
-    createDefaultTexture(color) {
+    createDefaultTexture(color = [0, 0, 0, 255]) {
         const texture = this.device.createTexture({
             size: [1, 1, 1],
             format: "rgba8unorm",
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
         });
 
-        const textureData = new Uint8Array(color);
+        const textureData = new Uint8Array([color[0], color[1], color[2], color[3]]);
+
         this.device.queue.writeTexture(
-            { texture: texture, mipLevel: 0, origin: [0, 0, 0] },
+            { texture: texture, mipLevel: 0, origin: { x: 0, y: 0, z: 0 } },
             textureData,
             { bytesPerRow: 4, rowsPerImage: 1 },
-            [1, 1, 1]
+            { width: 1, height: 1, depthOrArrayLayers: 1 }
         );
 
         const sampler = this.device.createSampler({
@@ -118,6 +120,7 @@ export class GameObject {
 
         return { texture, sampler };
     }
+
     makeDefaultSphere(radius = 1, latSegments = 16, longSegments = 16) {
         const positions = [];
         const indices = [];

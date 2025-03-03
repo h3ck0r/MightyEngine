@@ -22,12 +22,14 @@ export class Engine {
         this.bindLayouts = createBindLayouts(this.device);
         this.postProcessResources = createPostProcessResources(this.device, this.bindLayouts, sceneTextureView);
 
-        this.gameObjects = await loadObjects(this.device, this.bindLayouts, this.buffers);
         this.pointLightObjects = await loadPointLightObjects(this.device, this.bindLayouts, this.buffers);
+        this.gameObjects = await loadObjects(this.device, this.bindLayouts, this.buffers, this.pointLightObjects);
         this.skybox = await loadSkybox(this.device, this.bindLayouts, this.buffers);
 
         this.pipelines = createPipeline(this.device, canvasFormat, this.shaderModules, this.bindLayouts);
         this.depthView = await createDepthTexture(this.device, canvas);
+
+        this.time = 0;
         setupUI(this.device, this.buffers);
     }
     run() {
@@ -50,15 +52,36 @@ export class Engine {
         scenePass.end();
     }
     update() {
+        this.time = performance.now() * 0.001; 
+
         updateFPS();
         updateCamera(this.modelViewProjectionMatrix);
+        this.updatePointLights();
         this.device.queue.writeBuffer(this.buffers.mvpBuffer, 0, this.modelViewProjectionMatrix);
         this.device.queue.writeBuffer(this.buffers.cameraPositionBuffer, 0, globals.cameraPosition);
+    }
+    updatePointLights() {
+        let offset = 0;
+        const radius = 5.0; // Change this to adjust the size of the circle
+
+        for (let i = 0; i < this.pointLightObjects.pointLightObjects.length; i++) {
+            const obj = this.pointLightObjects.pointLightObjects[i];
+
+            const angle = this.time * 0.5 + (i * (Math.PI * 2 / this.pointLightObjects.pointLightObjects.length));
+            const x = Math.cos(angle) * radius;
+            const z = Math.sin(angle) * radius;
+            obj.position = vec3.fromValues(x, obj.position[1], z);
+            obj.updateTransform();
+            this.device.queue.writeBuffer(this.pointLightObjects.pointLightPositionsBuffer, offset * 16, obj.position);
+            this.device.queue.writeBuffer(this.pointLightObjects.pointLightColorsBuffer, offset * 16, obj.defaultColor);
+            this.device.queue.writeBuffer(this.pointLightObjects.pointLightIntensityBuffer, offset * 16, new Float32Array([obj.radius, 0, 0, 0]));
+            offset += 1;
+        }
     }
     renderPointLights(encoder) {
         const pointLightPass = createRenderPass(encoder, this.sceneTextureView, this.depthView, false, false);
         pointLightPass.setPipeline(this.pipelines.pointLightPipeline);
-        for (const model of this.pointLightObjects) {
+        for (const model of this.pointLightObjects.pointLightObjects) {
             model.updateTransform();
             this.device.queue.writeBuffer(model.modelMatrixBuffer, 0, model.modelMatrix);
             pointLightPass.setVertexBuffer(0, model.vertexBuffer);
@@ -87,23 +110,23 @@ export class Engine {
         pass.setPipeline(this.pipelines.mainPipeline);
         for (let i = 0; i < this.gameObjects.length; i++) {
             const obj = this.gameObjects[i];
-            if (!obj.velocity) {
-                obj.velocity = vec3.fromValues(
-                    (Math.random() - 0.5) * 0.01,
-                    (Math.random() - 0.5) * 0.01,
-                    (Math.random() - 0.5) * 0.01
-                );
-            }
+            // if (!obj.velocity) {
+            //     obj.velocity = vec3.fromValues(
+            //         (Math.random() - 0.5) * 0.01,
+            //         (Math.random() - 0.5) * 0.01,
+            //         (Math.random() - 0.5) * 0.01
+            //     );
+            // }
 
-            if (!obj.rotationVelocity) {
-                obj.rotationVelocity = vec3.fromValues(
-                    0.0,
-                    0.005,
-                    0.0
-                );
-            }
+            // if (!obj.rotationVelocity) {
+            //     obj.rotationVelocity = vec3.fromValues(
+            //         0.0,
+            //         0.005,
+            //         0.0
+            //     );
+            // }
 
-            vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
+            // vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
             // vec3.add(obj.position, obj.position, obj.velocity);
 
             obj.updateTransform();

@@ -1,7 +1,7 @@
 import { loadShader } from "./utils.js"
 
 export const globals = {
-    lightDirection: new Float32Array([1, 1, 1]),
+    lightDirection: new Float32Array([1, 1, 1, 1]),
     cameraPosition: new Float32Array([0, 0, 0]),
     cameraRotation: [0, 0],
     keyboardKeys: {},
@@ -64,6 +64,7 @@ export async function setupUI(device, buffers) {
     const inputLightingX = document.querySelector("#input-lighting-x input");
     const inputLightingY = document.querySelector("#input-lighting-y input");
     const inputLightingZ = document.querySelector("#input-lighting-z input");
+    const inputLightingW = document.querySelector("#input-lighting-w input");
     inputLightingX.addEventListener("input", (e) => {
         globals.lightDirection[0] = e.target.value;
         device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
@@ -74,6 +75,10 @@ export async function setupUI(device, buffers) {
     });
     inputLightingZ.addEventListener("input", (e) => {
         globals.lightDirection[2] = e.target.value;
+        device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
+    });
+    inputLightingW.addEventListener("input", (e) => {
+        globals.lightDirection[3] = e.target.value;
         device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
     });
 
@@ -119,7 +124,7 @@ export async function setupBuffers(device) {
 
     const globalLightDirectionBuffer = device.createBuffer({
         label: "Global Light Direction Buffer",
-        size: 3 * 4,
+        size: 4 * 4,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     device.queue.writeBuffer(globalLightDirectionBuffer, 0, globals.lightDirection);

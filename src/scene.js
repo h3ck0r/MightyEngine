@@ -1,59 +1,87 @@
 import { vec3 } from "gl-matrix";
 import { GameObject } from "./game-object.js";
 
-export async function loadPointLightObjects(device, bindLayouts, buffers) {
+export async function loadPointLightObjects(device, bindLayouts, buffers, numLights = 1, radius = 5.0) {
     const pointLightObjects = [];
+    const objectsToAdd = [];
+    const point = new GameObject(device);
+    point.makeDefaultSphere();
+    objectsToAdd.push(point);
 
-    const pointLightObject = new GameObject(device);
-    pointLightObject.makeDefaultSphere();
-    for (const model of pointLightObject.models) {
-        const obj = new GameObject(device);
-        obj.vertexBuffer = model.vertexBuffer;
-        obj.indexBuffer = model.indexBuffer;
-        obj.indices = model.indices;
-        obj.position = vec3.fromValues(-2.0, 0.0, 0.0);
-        obj.scale = vec3.fromValues(0.5,0.5,0.5);
-        obj.modelMatrixBuffer = device.createBuffer({
-            label: "Model Matrix Buffer",
-            size: 4 * 16,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
-        const lightColor = new Float32Array([1.0, 1.0, 1.0, 1.0]);
-        obj.colorBuffer = device.createBuffer({
-            label: "Point Light Color Buffer",
-            size: 4 * 4,
-            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        });
-        device.queue.writeBuffer(obj.colorBuffer, 0, lightColor);
+    for (let i = 0; i < numLights; i++) {
+        const angle = (i / numLights) * Math.PI * 2; // Evenly distribute around the circle
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
 
-        obj.bindGroup = device.createBindGroup({
-            layout: bindLayouts.pointLightBindGroupLayout,
-            entries: [
-                { binding: 0, resource: { buffer: buffers.mvpBuffer } },
-                { binding: 1, resource: { buffer: obj.modelMatrixBuffer } },
-                { binding: 2, resource: { buffer: obj.colorBuffer } }
-            ]
-        });
+        for (const pointLightObject of objectsToAdd) {
+            for (const model of pointLightObject.models) {
+                const obj = new GameObject(device);
+                obj.vertexBuffer = model.vertexBuffer;
+                obj.indexBuffer = model.indexBuffer;
+                obj.indices = model.indices;
+                obj.position = vec3.fromValues(x, 0.0, z); // Position on a circle
+                obj.scale = vec3.fromValues(0.5, 0.5, 0.5);
+                obj.modelMatrixBuffer = device.createBuffer({
+                    label: "Model Matrix Buffer",
+                    size: 4 * 16,
+                    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                });
 
-        pointLightObjects.push(obj);
+                const lightColor = pointLightObject.defaultColor;
+                obj.colorBuffer = device.createBuffer({
+                    label: "Point Light Color Buffer",
+                    size: 4 * 4,
+                    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                });
+                device.queue.writeBuffer(obj.colorBuffer, 0, lightColor);
+
+                obj.bindGroup = device.createBindGroup({
+                    layout: bindLayouts.pointLightBindGroupLayout,
+                    entries: [
+                        { binding: 0, resource: { buffer: buffers.mvpBuffer } },
+                        { binding: 1, resource: { buffer: obj.modelMatrixBuffer } },
+                        { binding: 2, resource: { buffer: obj.colorBuffer } }
+                    ]
+                });
+
+                pointLightObjects.push(obj);
+            }
+        }
     }
 
-    return pointLightObjects;
+    const pointLightPositionsBuffer = device.createBuffer({
+        label: "Point Light Positions",
+        size: pointLightObjects.length * 4 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+    const pointLightColorsBuffer = device.createBuffer({
+        label: "Point Light Colors",
+        size: pointLightObjects.length * 4 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+    const pointLightIntensityBuffer = device.createBuffer({
+        label: "Point Light Intensity",
+        size: pointLightObjects.length * 4 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+    });
+
+    return { pointLightObjects, pointLightPositionsBuffer, pointLightColorsBuffer, pointLightIntensityBuffer };
 }
 
 
-export async function loadObjects(device, bindLayouts, buffers) {
+export async function loadObjects(device, bindLayouts, buffers, pointLightObjects) {
     const gameObjects = [];
     const instance_count = 1;
 
     const modelPaths = [
-        { name: "imp", url: "resources/devil_book/model.glb" },
+        { name: "imp", url: "resources/book/model.glb" },
     ];
 
     const gameObjectMap = {};
     for (const modelInfo of modelPaths) {
         const gameObject = new GameObject(device);
         await gameObject.addModel(modelInfo.url, device);
+        // gameObject.scale = vec3.fromValues(0.01, 0.01, 0.01);
         gameObjectMap[modelInfo.name] = gameObject;
     }
 
@@ -66,14 +94,13 @@ export async function loadObjects(device, bindLayouts, buffers) {
             obj.vertexBuffer = model.vertexBuffer;
             obj.indexBuffer = model.indexBuffer;
             obj.indices = model.indices;
-            obj.position = vec3.fromValues(4.0, 0.0, 1.0);
-
+            obj.position = vec3.fromValues(0.0, 0.0, 0.0);
             obj.modelMatrixBuffer = device.createBuffer({
                 label: "Model Matrix Buffer",
                 size: 4 * 16,
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
             });
-
+            obj.scale = referenceObj.scale;
             obj.bindGroup = device.createBindGroup({
                 layout: bindLayouts.mainBindGroupLayout,
                 entries: [
@@ -81,16 +108,19 @@ export async function loadObjects(device, bindLayouts, buffers) {
                     { binding: 1, resource: { buffer: obj.modelMatrixBuffer } },
                     { binding: 2, resource: { buffer: buffers.cameraPositionBuffer } },
                     { binding: 3, resource: { buffer: buffers.globalLightDirectionBuffer } },
-                    { binding: 4, resource: model.albedoTexture.createView() },
-                    { binding: 5, resource: model.albedoSampler },
-                    { binding: 6, resource: model.normalTexture.createView() },
-                    { binding: 7, resource: model.normalSampler },
-                    { binding: 8, resource: model.roughnessTexture.createView() },
-                    { binding: 9, resource: model.roughnessSampler },
-                    { binding: 10, resource: model.metalnessTexture.createView() },
-                    { binding: 11, resource: model.metalnessSampler },
-                    { binding: 12, resource: model.specularColorTexture.createView() },
-                    { binding: 13, resource: model.specularColorSampler }
+                    { binding: 4, resource: { buffer: pointLightObjects.pointLightPositionsBuffer } },
+                    { binding: 5, resource: { buffer: pointLightObjects.pointLightColorsBuffer } },
+                    { binding: 6, resource: { buffer: pointLightObjects.pointLightIntensityBuffer } },
+                    { binding: 7, resource: model.albedoTexture.createView() },
+                    { binding: 8, resource: model.albedoSampler },
+                    { binding: 9, resource: model.normalTexture.createView() },
+                    { binding: 10, resource: model.normalSampler },
+                    { binding: 11, resource: model.roughnessTexture.createView() },
+                    { binding: 12, resource: model.roughnessSampler },
+                    { binding: 13, resource: model.metalnessTexture.createView() },
+                    { binding: 14, resource: model.metalnessSampler },
+                    { binding: 15, resource: model.specularColorTexture.createView() },
+                    { binding: 16, resource: model.specularColorSampler },
                 ]
             });
 
