@@ -8,18 +8,17 @@ export function createBindLayouts(device) {
             { binding: 2, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // camera position
             { binding: 3, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // light dir
             { binding: 4, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // point lights position
-            { binding: 5, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // point lights color
-            { binding: 6, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // point lights intensity
-            { binding: 7, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // albedo
-            { binding: 8, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 9, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // normal
-            { binding: 10, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 11, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // roughness
-            { binding: 12, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 13, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // metalic
-            { binding: 14, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-            { binding: 15, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // specular
-            { binding: 16, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 5, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // point lights color + intensity
+            { binding: 6, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // albedo
+            { binding: 7, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 8, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // normal
+            { binding: 9, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 10, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // roughness
+            { binding: 11, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 12, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // metalic
+            { binding: 13, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 14, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // specular
+            { binding: 15, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
 
         ]
     });

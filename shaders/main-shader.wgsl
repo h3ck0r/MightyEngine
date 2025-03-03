@@ -22,32 +22,30 @@ var<uniform> lightDirection: vec4<f32>;
 var<uniform> pointLightPositions: array<vec4<f32>, NUM_POINT_LIGHTS>;
 @group(0) @binding(5)
 var<uniform> pointLightColors: array<vec4<f32>, NUM_POINT_LIGHTS>;
-@group(0) @binding(6)
-var<uniform> pointLightIntensities: array<vec4<f32>, NUM_POINT_LIGHTS>;
 
-@group(0) @binding(7)
+@group(0) @binding(6)
 var textureImage: texture_2d<f32>;
-@group(0) @binding(8)
+@group(0) @binding(7)
 var samplerLoader: sampler;
 
-@group(0) @binding(9)
+@group(0) @binding(8)
 var normalImage: texture_2d<f32>;
-@group(0) @binding(10)
+@group(0) @binding(9)
 var normalLoader: sampler;
 
-@group(0) @binding(11)
+@group(0) @binding(10)
 var roughnessImage: texture_2d<f32>;
-@group(0) @binding(12)
+@group(0) @binding(11)
 var roughnessLoader: sampler;
 
-@group(0) @binding(13)
+@group(0) @binding(12)
 var metalnessImage: texture_2d<f32>;
-@group(0) @binding(14)
+@group(0) @binding(13)
 var metalnessLoader: sampler;
 
-@group(0) @binding(15)
+@group(0) @binding(14)
 var specularColorImage: texture_2d<f32>;
-@group(0) @binding(16)
+@group(0) @binding(15)
 var specularColorLoader: sampler;
 
 
@@ -134,7 +132,7 @@ fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: v
     for (var i: u32 = 0; i < NUM_POINT_LIGHTS; i = i + 1) {
         let lightPos = pointLightPositions[i];
         let lightColor = pointLightColors[i];
-        let lightIntensity = pointLightIntensities[i];
+        let lightIntensity = lightColor.a;
 
         let L = normalize(lightPos.rgb - worldPos);
         let H = normalize(V + L);
@@ -148,10 +146,10 @@ fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: v
 
         let numerator = NDF * G * fresnel;
         let denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        let specular = (numerator / denominator) * lightColor.rgb * lightIntensity.x * attenuation;
+        let specular = (numerator / denominator) * lightColor.rgb * lightIntensity * attenuation;
 
         let kD = vec3<f32>(1.0) - fresnel;
-        let diffuse = kD * baseColor * NdotL * attenuation * lightColor.rgb * lightIntensity.x;
+        let diffuse = kD * baseColor * NdotL * attenuation * lightColor.rgb * lightIntensity;
 
         result += diffuse + specular;
     }

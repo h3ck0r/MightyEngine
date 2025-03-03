@@ -74,7 +74,6 @@ export class Engine {
             obj.updateTransform();
             this.device.queue.writeBuffer(this.pointLightObjects.pointLightPositionsBuffer, offset * 16, obj.position);
             this.device.queue.writeBuffer(this.pointLightObjects.pointLightColorsBuffer, offset * 16, obj.defaultColor);
-            this.device.queue.writeBuffer(this.pointLightObjects.pointLightIntensityBuffer, offset * 16, new Float32Array([obj.radius, 0, 0, 0]));
             offset += 1;
         }
     }

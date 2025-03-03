@@ -59,13 +59,9 @@ export async function loadPointLightObjects(device, bindLayouts, buffers, numLig
         size: pointLightObjects.length * 4 * 4,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-    const pointLightIntensityBuffer = device.createBuffer({
-        label: "Point Light Intensity",
-        size: pointLightObjects.length * 4 * 4,
-        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-    });
+   
 
-    return { pointLightObjects, pointLightPositionsBuffer, pointLightColorsBuffer, pointLightIntensityBuffer };
+    return { pointLightObjects, pointLightPositionsBuffer, pointLightColorsBuffer };
 }
 
 
@@ -110,17 +106,16 @@ export async function loadObjects(device, bindLayouts, buffers, pointLightObject
                     { binding: 3, resource: { buffer: buffers.globalLightDirectionBuffer } },
                     { binding: 4, resource: { buffer: pointLightObjects.pointLightPositionsBuffer } },
                     { binding: 5, resource: { buffer: pointLightObjects.pointLightColorsBuffer } },
-                    { binding: 6, resource: { buffer: pointLightObjects.pointLightIntensityBuffer } },
-                    { binding: 7, resource: model.albedoTexture.createView() },
-                    { binding: 8, resource: model.albedoSampler },
-                    { binding: 9, resource: model.normalTexture.createView() },
-                    { binding: 10, resource: model.normalSampler },
-                    { binding: 11, resource: model.roughnessTexture.createView() },
-                    { binding: 12, resource: model.roughnessSampler },
-                    { binding: 13, resource: model.metalnessTexture.createView() },
-                    { binding: 14, resource: model.metalnessSampler },
-                    { binding: 15, resource: model.specularColorTexture.createView() },
-                    { binding: 16, resource: model.specularColorSampler },
+                    { binding: 6, resource: model.albedoTexture.createView() },
+                    { binding: 7, resource: model.albedoSampler },
+                    { binding: 8, resource: model.normalTexture.createView() },
+                    { binding: 9, resource: model.normalSampler },
+                    { binding: 10, resource: model.roughnessTexture.createView() },
+                    { binding: 11, resource: model.roughnessSampler },
+                    { binding: 12, resource: model.metalnessTexture.createView() },
+                    { binding: 13, resource: model.metalnessSampler },
+                    { binding: 14, resource: model.specularColorTexture.createView() },
+                    { binding: 15, resource: model.specularColorSampler },
                 ]
             });
 
