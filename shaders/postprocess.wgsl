@@ -33,7 +33,7 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     // let uvWarped = crtWarp(input.uv);
     // var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
-    var color = chromaticAberration(input.uv,0.0004);
+    var color = chromaticAberration(input.uv,0.0003);
     // color += motionBlur(input.uv);
     // color = applyExposure(color);
     color = stylizedShadows(color);
@@ -41,7 +41,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     // color = scanlines2(input.uv, color);
     color += randomNoise(input.uv) * 0.05; 
     color = posterize(color, 12);
-    // color = vignette(input.uv, color);
+    color = vignette(input.uv, color);
     // color += invertColor(color)*0.00001;
 
     return vec4<f32>(color, 1.0);
@@ -66,7 +66,7 @@ fn extractBright(color: vec3<f32>) -> vec3<f32> {
     return max(color - vec3<f32>(0.7, 0.7, 0.7), vec3<f32>(0.0));
 }
 fn vignette(uv: vec2<f32>, color: vec3<f32>) -> vec3<f32> {
-    let d = length(uv - vec2<f32>(0.5, 0.5)) * 1.5; 
+    let d = length(uv - vec2<f32>(0.5, 0.5)) * 1.2; 
     let vignetteFactor = clamp(1.0 - d * d, 0.2, 1.0); 
     return color * vignetteFactor;
 }

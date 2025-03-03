@@ -104,7 +104,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let finalColor = computeLighting(mappedNormal, viewDir, input.worldPos, texColor.rgb, roughness, metalness, specularColor, ao);
 
     let gammaCorrected = pow(finalColor, vec3<f32>(1.0 / 2.2));
-    return vec4<f32>(gammaCorrected, texColor.a);
+    return vec4<f32>(finalColor, texColor.a);
 }
 
 fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, roughness: f32, metalness: f32, specularColor: vec3<f32>, ao: f32) -> vec3<f32> {
@@ -112,7 +112,7 @@ fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: v
 
     let dielectricF0 = vec3<f32>(0.04);
     let aoFactor = mix(vec3<f32>(1.0), vec3<f32>(ao), metalness);
-    let F0 = mix(dielectricF0, specularColor, metalness) * aoFactor;
+    let F0 = mix(vec3<f32>(0.04), baseColor, metalness);
 
     let L_dir = normalize(lightDirection.rgb);
     let H_dir = normalize(V + L_dir);
@@ -122,7 +122,7 @@ fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: v
 
     let numerator_dir = NDF_dir * G_dir * fresnel_dir;
     let denominator_dir = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L_dir), 0.0) + 0.0001;
-    let specular_dir = numerator_dir / denominator_dir;
+    let specular_dir = numerator_dir / denominator_dir*ao;
 
     let kD_dir = vec3<f32>(1.0) - fresnel_dir;
     let diffuse_dir = kD_dir * baseColor * max(dot(N, L_dir), 0.0) * ao;
@@ -146,10 +146,10 @@ fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: v
 
         let numerator = NDF * G * fresnel;
         let denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        let specular = (numerator / denominator) * lightColor.rgb * lightIntensity * attenuation;
+        let specular = (numerator / denominator) * lightColor.rgb * lightIntensity * attenuation*ao;
 
         let kD = vec3<f32>(1.0) - fresnel;
-        let diffuse = kD * baseColor * NdotL * attenuation * lightColor.rgb * lightIntensity;
+        let diffuse = kD * baseColor * NdotL * attenuation * lightColor.rgb * lightIntensity*ao;
 
         result += diffuse + specular;
     }

@@ -7,7 +7,7 @@ export class GameObject {
         this.position = vec3.fromValues(0, 0, 0);
         this.scale = vec3.fromValues(1, 1, 1);
         this.modelMatrix = mat4.create();
-        this.defaultColor = new Float32Array([1, 1, 1, 10]); // color + intensity of point light
+        this.defaultColor = new Float32Array([1, 1, 1, 20]); // color + intensity of point light
         this.models = [];
         this.device = device;
         mat4.identity(this.modelMatrix);
