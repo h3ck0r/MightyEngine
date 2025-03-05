@@ -10,8 +10,37 @@ export const globals = {
     mouseSensitivity: 0.002,
 }
 
+export function createRenderTextureViews(device, canvas, canvasFormat) {
+    const sceneTexture = device.createTexture({
+        size: [canvas.width, canvas.height, 1],
+        format: canvasFormat,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
+    });
+    const sceneTextureView = sceneTexture.createView();
 
-export function createPostProcessResources(device, bindLayouts, sceneTextureView) {
+    const bloomTexture = device.createTexture({
+        size: [canvas.width, canvas.height, 1],
+        format: canvasFormat,
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
+    });
+    const bloomTextureView = bloomTexture.createView();
+
+    const blurTexture = device.createTexture({
+        size: [canvas.width, canvas.height, 1],
+        format: canvasFormat,
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
+    });
+    const blurTextureView = blurTexture.createView();
+
+    return { sceneTextureView, bloomTextureView, blurTextureView };
+}
+
+export function createPostProcessResources(device, bindLayouts, renderTextureViews) {
+
+    const bloomSampler = device.createSampler({
+        magFilter: "linear",
+        minFilter: "linear"
+    });
 
     const sceneSampler = device.createSampler({
         magFilter: "linear",
@@ -21,12 +50,30 @@ export function createPostProcessResources(device, bindLayouts, sceneTextureView
     const postProcessBindGroup = device.createBindGroup({
         layout: bindLayouts.postProcessBindGroupLayout,
         entries: [
-            { binding: 0, resource: sceneTextureView },
+            { binding: 0, resource: renderTextureViews.sceneTextureView },
             { binding: 1, resource: sceneSampler },
+            { binding: 2, resource: renderTextureViews.blurTextureView },
+            { binding: 3, resource: bloomSampler }
         ],
     });
 
-    return { postProcessBindGroup };
+    const bloomBindGroup = device.createBindGroup({
+        layout: bindLayouts.bloomBindGroupLayout,
+        entries: [
+            { binding: 0, resource: renderTextureViews.sceneTextureView },
+            { binding: 1, resource: bloomSampler }
+        ],
+    });
+
+    const blurBindGroup = device.createBindGroup({
+        layout: bindLayouts.bloomBindGroupLayout,
+        entries: [
+            { binding: 0, resource: renderTextureViews.bloomTextureView },
+            { binding: 1, resource: bloomSampler }
+        ],
+    });
+
+    return { postProcessBindGroup, bloomBindGroup, blurBindGroup };
 }
 
 export async function loadShaders(device) {
@@ -38,7 +85,15 @@ export async function loadShaders(device) {
     const postProcessShaderModule = device.createShaderModule({ label: 'Postprocess Shader', code: postprocessShaderCode });
     const pointLightShaderCode = await loadShader('shaders/point-light.wgsl');
     const pointLightShaderModule = device.createShaderModule({ label: 'Point Light Shader', code: pointLightShaderCode });
-    return { mainShaderModule, skyboxShaderModule, postProcessShaderModule, pointLightShaderModule };
+    const bloomShaderCode = await loadShader('shaders/bloom.wgsl');
+    const bloomShaderModule = device.createShaderModule({ label: 'Bloom Shader', code: bloomShaderCode });
+    return {
+        mainShaderModule,
+        skyboxShaderModule,
+        postProcessShaderModule,
+        pointLightShaderModule,
+        bloomShaderModule
+    };
 }
 
 export async function setupUI(device, buffers) {
@@ -173,12 +228,5 @@ export async function setup() {
     globals.aspect = canvas.width / canvas.height;
     if (!device || !context || !canvas || !canvasFormat) throw new Error('Failed to setup');
 
-    const sceneTexture = device.createTexture({
-        size: [canvas.width, canvas.height, 1],
-        format: canvasFormat,
-        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
-    });
-    const sceneTextureView = sceneTexture.createView();
-
-    return { device, context, canvas, canvasFormat, sceneTextureView };
+    return { device, context, canvas, canvasFormat };
 }

@@ -19,9 +19,9 @@ export function createBindLayouts(device) {
             { binding: 13, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
             { binding: 14, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // specular
             { binding: 15, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-
         ]
     });
+
     const skyboxBindGroupLayout = device.createBindGroupLayout({
         label: "Skybox Bind Group Layout",
         entries: [
@@ -31,13 +31,7 @@ export function createBindLayouts(device) {
             { binding: 3, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float", viewDimension: "cube" } }
         ]
     });
-    const postProcessBindGroupLayout = device.createBindGroupLayout({
-        label: "Post-Processing Bind Group Layout",
-        entries: [
-            { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
-            { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
-        ]
-    });
+
     const pointLightBindGroupLayout = device.createBindGroupLayout({
         label: "Point Light Bind Group Layout",
         entries: [
@@ -47,7 +41,29 @@ export function createBindLayouts(device) {
         ]
     });
 
+    const bloomBindGroupLayout = device.createBindGroupLayout({
+        label: "Bloom Bind Group Layout",
+        entries: [
+            { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+        ]
+    });
 
-    return { mainBindGroupLayout, skyboxBindGroupLayout, postProcessBindGroupLayout, pointLightBindGroupLayout };
+    const postProcessBindGroupLayout = device.createBindGroupLayout({
+        label: "Post-Processing Bind Group Layout",
+        entries: [
+            { binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
+            { binding: 3, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+        ]
+    });
 
+    return {
+        mainBindGroupLayout,
+        skyboxBindGroupLayout,
+        postProcessBindGroupLayout,
+        pointLightBindGroupLayout,
+        bloomBindGroupLayout,
+    };
 }

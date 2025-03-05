@@ -9,7 +9,7 @@ export async function loadPointLightObjects(device, bindLayouts, buffers, numLig
     objectsToAdd.push(point);
 
     for (let i = 0; i < numLights; i++) {
-        const angle = (i / numLights) * Math.PI * 2; // Evenly distribute around the circle
+        const angle = (i / numLights) * Math.PI * 2; 
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
 
@@ -19,7 +19,7 @@ export async function loadPointLightObjects(device, bindLayouts, buffers, numLig
                 obj.vertexBuffer = model.vertexBuffer;
                 obj.indexBuffer = model.indexBuffer;
                 obj.indices = model.indices;
-                obj.position = vec3.fromValues(x, 0.0, z); // Position on a circle
+                obj.position = vec3.fromValues(x, 0.0, z); 
                 obj.scale = vec3.fromValues(0.5, 0.5, 0.5);
                 obj.modelMatrixBuffer = device.createBuffer({
                     label: "Model Matrix Buffer",

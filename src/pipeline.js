@@ -113,7 +113,46 @@ export function createPipeline(device, canvasFormat, shaderModules, bindLayouts)
         }
     });
 
+    const bloomPipeline = device.createRenderPipeline({
+        label: "Bloom  Pipeline",
+        layout: device.createPipelineLayout({
+            bindGroupLayouts: [bindLayouts.bloomBindGroupLayout]
+        }),
+        vertex: {
+            module: shaderModules.postProcessShaderModule,
+            entryPoint: "vertexMain",
+            buffers: []
+        },
+        fragment: {
+            module: shaderModules.bloomShaderModule,
+            entryPoint: "bloomMain",
+            targets: [{ format: canvasFormat }]
+        }
+    });
+    const blurPipeline = device.createRenderPipeline({
+        label: "Bloom  Pipeline",
+        layout: device.createPipelineLayout({
+            bindGroupLayouts: [bindLayouts.bloomBindGroupLayout]
+        }),
+        vertex: {
+            module: shaderModules.postProcessShaderModule,
+            entryPoint: "vertexMain",
+            buffers: []
+        },
+        fragment: {
+            module: shaderModules.bloomShaderModule,
+            entryPoint: "blurMain",
+            targets: [{ format: canvasFormat }]
+        }
+    });
 
-    return { mainPipeline, skyboxPipeline, postProcessPipeline, pointLightPipeline };
+    return {
+        mainPipeline,
+        skyboxPipeline,
+        postProcessPipeline,
+        pointLightPipeline,
+        bloomPipeline,
+        blurPipeline,
+    };
 
 }

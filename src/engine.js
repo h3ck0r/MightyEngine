@@ -1,6 +1,6 @@
 import { vec3, mat4 } from "gl-matrix";
 import { updateFPS } from "./ui.js";
-import { setup, loadShaders, setupBuffers, createPostProcessResources, createDepthTexture, setupUI } from "./setup.js";
+import { setup, loadShaders, setupBuffers, createPostProcessResources, createRenderTextureViews, createDepthTexture, setupUI } from "./setup.js";
 import { loadObjects, loadPointLightObjects } from "./scene.js"
 import { loadSkybox } from "./skybox.js"
 import { createPipeline } from "./pipeline.js"
@@ -12,15 +12,17 @@ import { createRenderPass } from "./utils.js"
 export class Engine {
     async init() {
         this.modelViewProjectionMatrix = mat4.create();
-        const { device, context, canvas, canvasFormat, sceneTextureView } = await setup();
+        const { device, context, canvas, canvasFormat } = await setup();
         this.device = device;
         this.context = context;
-        this.sceneTextureView = sceneTextureView;
+        this.canvasFormat = canvasFormat;
+        this.canvas = canvas;
 
+        this.renderTextureViews = createRenderTextureViews(this.device, this.canvas, this.canvasFormat);
         this.shaderModules = await loadShaders(this.device);
         this.buffers = await setupBuffers(this.device);
         this.bindLayouts = createBindLayouts(this.device);
-        this.postProcessResources = createPostProcessResources(this.device, this.bindLayouts, sceneTextureView);
+        this.postProcessResources = createPostProcessResources(this.device, this.bindLayouts, this.renderTextureViews);
 
         this.pointLightObjects = await loadPointLightObjects(this.device, this.bindLayouts, this.buffers);
         this.gameObjects = await loadObjects(this.device, this.bindLayouts, this.buffers, this.pointLightObjects);
@@ -46,13 +48,13 @@ export class Engine {
         requestAnimationFrame(renderLoop);
     }
     renderScene(encoder) {
-        const scenePass = createRenderPass(encoder, this.sceneTextureView, this.depthView)
+        const scenePass = createRenderPass(encoder, this.renderTextureViews.sceneTextureView, this.depthView)
         this.renderSkybox(scenePass);
         this.renderObjects(scenePass);
         scenePass.end();
     }
     update() {
-        this.time = performance.now() * 0.001; 
+        this.time = performance.now() * 0.001;
 
         updateFPS();
         updateCamera(this.modelViewProjectionMatrix);
@@ -62,7 +64,7 @@ export class Engine {
     }
     updatePointLights() {
         let offset = 0;
-        const radius = 5.0; // Change this to adjust the size of the circle
+        const radius = 5.0;
 
         for (let i = 0; i < this.pointLightObjects.pointLightObjects.length; i++) {
             const obj = this.pointLightObjects.pointLightObjects[i];
@@ -78,7 +80,7 @@ export class Engine {
         }
     }
     renderPointLights(encoder) {
-        const pointLightPass = createRenderPass(encoder, this.sceneTextureView, this.depthView, false, false);
+        const pointLightPass = createRenderPass(encoder, this.renderTextureViews.sceneTextureView, this.depthView, false, false);
         pointLightPass.setPipeline(this.pipelines.pointLightPipeline);
         for (const model of this.pointLightObjects.pointLightObjects) {
             model.updateTransform();
@@ -98,7 +100,27 @@ export class Engine {
         pass.setIndexBuffer(this.skybox.skyboxIndexBuffer, "uint16");
         pass.drawIndexed(36);
     }
+
     postProcess(encoder) {
+        this.renderBloom(encoder);
+        this.combinePostProcess(encoder);
+    }
+
+    renderBloom(encoder) {
+        const bloomPass = createRenderPass(encoder, this.renderTextureViews.bloomTextureView);
+        bloomPass.setPipeline(this.pipelines.bloomPipeline);
+        bloomPass.setBindGroup(0, this.postProcessResources.bloomBindGroup);
+        bloomPass.draw(6);
+        bloomPass.end();
+
+        const blurPass = createRenderPass(encoder, this.renderTextureViews.blurTextureView);
+        blurPass.setPipeline(this.pipelines.blurPipeline);
+        blurPass.setBindGroup(0, this.postProcessResources.blurBindGroup);
+        blurPass.draw(6);
+        blurPass.end();
+    }
+
+    combinePostProcess(encoder) {
         const postProcessPass = createRenderPass(encoder, this.context.getCurrentTexture().createView());
         postProcessPass.setPipeline(this.pipelines.postProcessPipeline);
         postProcessPass.setBindGroup(0, this.postProcessResources.postProcessBindGroup);
