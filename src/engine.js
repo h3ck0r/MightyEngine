@@ -22,7 +22,7 @@ export class Engine {
         this.shaderModules = await loadShaders(this.device);
         this.buffers = await setupBuffers(this.device);
         this.bindLayouts = createBindLayouts(this.device);
-        this.postProcessResources = createPostProcessResources(this.device, this.bindLayouts, this.renderTextureViews);
+        this.postProcessResources = createPostProcessResources(this.device, this.bindLayouts, this.renderTextureViews, this.buffers);
 
         this.pointLightObjects = await loadPointLightObjects(this.device, this.bindLayouts, this.buffers);
         this.gameObjects = await loadObjects(this.device, this.bindLayouts, this.buffers, this.pointLightObjects);
@@ -107,17 +107,24 @@ export class Engine {
     }
 
     renderBloom(encoder) {
+
         const bloomPass = createRenderPass(encoder, this.renderTextureViews.bloomTextureView);
         bloomPass.setPipeline(this.pipelines.bloomPipeline);
         bloomPass.setBindGroup(0, this.postProcessResources.bloomBindGroup);
         bloomPass.draw(6);
         bloomPass.end();
 
-        const blurPass = createRenderPass(encoder, this.renderTextureViews.blurTextureView);
-        blurPass.setPipeline(this.pipelines.blurPipeline);
-        blurPass.setBindGroup(0, this.postProcessResources.blurBindGroup);
-        blurPass.draw(6);
-        blurPass.end();
+        const blurHPass = createRenderPass(encoder, this.renderTextureViews.blurHTextureView);
+        blurHPass.setPipeline(this.pipelines.blurHPipeline);
+        blurHPass.setBindGroup(0, this.postProcessResources.blurHBindGroup);
+        blurHPass.draw(6);
+        blurHPass.end();
+
+        const blurVPass = createRenderPass(encoder, this.renderTextureViews.blurVTextureView); 
+        blurVPass.setPipeline(this.pipelines.blurVPipeline);
+        blurVPass.setBindGroup(0, this.postProcessResources.blurVBindGroup);
+        blurVPass.draw(6);
+        blurVPass.end();
     }
 
     combinePostProcess(encoder) {

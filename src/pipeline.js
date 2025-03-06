@@ -129,7 +129,7 @@ export function createPipeline(device, canvasFormat, shaderModules, bindLayouts)
             targets: [{ format: canvasFormat }]
         }
     });
-    const blurPipeline = device.createRenderPipeline({
+    const blurVPipeline = device.createRenderPipeline({
         label: "Bloom  Pipeline",
         layout: device.createPipelineLayout({
             bindGroupLayouts: [bindLayouts.bloomBindGroupLayout]
@@ -141,7 +141,23 @@ export function createPipeline(device, canvasFormat, shaderModules, bindLayouts)
         },
         fragment: {
             module: shaderModules.bloomShaderModule,
-            entryPoint: "blurMain",
+            entryPoint: "blurVMain",
+            targets: [{ format: canvasFormat }]
+        }
+    });
+    const blurHPipeline = device.createRenderPipeline({
+        label: "Bloom  Pipeline",
+        layout: device.createPipelineLayout({
+            bindGroupLayouts: [bindLayouts.bloomBindGroupLayout]
+        }),
+        vertex: {
+            module: shaderModules.postProcessShaderModule,
+            entryPoint: "vertexMain",
+            buffers: []
+        },
+        fragment: {
+            module: shaderModules.bloomShaderModule,
+            entryPoint: "blurHMain",
             targets: [{ format: canvasFormat }]
         }
     });
@@ -152,7 +168,8 @@ export function createPipeline(device, canvasFormat, shaderModules, bindLayouts)
         postProcessPipeline,
         pointLightPipeline,
         bloomPipeline,
-        blurPipeline,
+        blurVPipeline,
+        blurHPipeline,
     };
 
 }

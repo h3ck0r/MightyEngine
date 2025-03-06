@@ -8,12 +8,14 @@ var bloomTexture: texture_2d<f32>;
 @group(0) @binding(3) 
 var bloomSampler: sampler;
 
+@group(0) @binding(4)
+var<uniform> bloomStrength: vec3<f32>;
+
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) uv: vec2<f32>
 };
 
-const bloomStrength: f32 = 1; 
 
 @vertex
 fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
@@ -40,11 +42,10 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     // let uvWarped = crtWarp(input.uv);
     // var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
-    var color = chromaticAberration(input.uv,0.0003);
-
+    var color = chromaticAberration(input.uv,0.0005);
     let bloomColor = textureSample(bloomTexture, bloomSampler, input.uv).rgb;
+    color += bloomColor * bloomStrength.r;
 
-    // color = mix(color, bloomColor, bloomStrength);
     // color += motionBlur(input.uv);
     // color = applyExposure(color);
     color = stylizedShadows(color);

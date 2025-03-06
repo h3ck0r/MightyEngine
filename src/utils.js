@@ -37,6 +37,7 @@ export async function loadGLTFModel(url) {
                     indexOffset += position.length / 3;
 
                     meshes.push({
+                        name: child.name,
                         vertices: new Float32Array(vertices),
                         indices: new Uint32Array(indices),
                         material

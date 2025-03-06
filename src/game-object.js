@@ -7,7 +7,7 @@ export class GameObject {
         this.position = vec3.fromValues(0, 0, 0);
         this.scale = vec3.fromValues(1, 1, 1);
         this.modelMatrix = mat4.create();
-        this.defaultColor = new Float32Array([1, 1, 1, 20]); // color + intensity of point light
+        this.defaultColor = new Float32Array([1, 1, 1, 0]); // color + intensity of point light
         this.models = [];
         this.device = device;
         mat4.identity(this.modelMatrix);
@@ -29,13 +29,13 @@ export class GameObject {
             const normalData = normalBitMap ? this.loadTexture(normalBitMap) : this.createDefaultTexture([128, 128, 255, 255]);
 
             const roughnessBitMap = material.roughnessMap?.source.data;
-            const roughnessData = roughnessBitMap ? this.loadTexture(roughnessBitMap) : this.createDefaultTexture([128, 128, 128, 255]);
+            const roughnessData = roughnessBitMap ? this.loadTexture(roughnessBitMap) : this.createDefaultTexture([255, 255, 255, 255]);
 
             const metalnessBitMap = material.metalnessMap?.source.data;
             const metalnessData = metalnessBitMap ? this.loadTexture(metalnessBitMap) : this.createDefaultTexture([0, 0, 0, 255]);
 
             const specularColorBitMap = material.specularColorMap?.source.data;
-            const specularColorData = specularColorBitMap ? this.loadTexture(specularColorBitMap) : this.createDefaultTexture([64, 64, 64, 255]);
+            const specularColorData = specularColorBitMap ? this.loadTexture(specularColorBitMap) : this.createDefaultTexture([255, 255, 255, 255]);
 
             const vertexBuffer = this.device.createBuffer({
                 label: "Vertex Buffer",

@@ -70,7 +70,7 @@ export async function loadObjects(device, bindLayouts, buffers, pointLightObject
     const instance_count = 1;
 
     const modelPaths = [
-        { name: "imp", url: "resources/book/model.glb" },
+        { name: "imp", url: "resources/tavern/model.glb" },
     ];
 
     const gameObjectMap = {};

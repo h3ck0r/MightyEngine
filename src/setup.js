@@ -2,6 +2,7 @@ import { loadShader } from "./utils.js"
 
 export const globals = {
     lightDirection: new Float32Array([1, 1, 1, 1]),
+    bloomStr: new Float32Array([1, 0, 0]),
     cameraPosition: new Float32Array([0, 0, 0]),
     cameraRotation: [0, 0],
     keyboardKeys: {},
@@ -16,26 +17,33 @@ export function createRenderTextureViews(device, canvas, canvasFormat) {
         format: canvasFormat,
         usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING
     });
-    const sceneTextureView = sceneTexture.createView();
 
     const bloomTexture = device.createTexture({
-        size: [canvas.width, canvas.height, 1],
+        size: [canvas.width / 2, canvas.height / 2, 1],
         format: canvasFormat,
         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
     });
+
+    const blurVTexture = device.createTexture({
+        size: [canvas.width / 2, canvas.height / 2, 1],
+        format: canvasFormat,
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
+    });
+    const blurHTexture = device.createTexture({
+        size: [canvas.width / 2, canvas.height / 2, 1],
+        format: canvasFormat,
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
+    });
+
+    const sceneTextureView = sceneTexture.createView();
     const bloomTextureView = bloomTexture.createView();
+    const blurVTextureView = blurVTexture.createView();
+    const blurHTextureView = blurHTexture.createView();
 
-    const blurTexture = device.createTexture({
-        size: [canvas.width, canvas.height, 1],
-        format: canvasFormat,
-        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT
-    });
-    const blurTextureView = blurTexture.createView();
-
-    return { sceneTextureView, bloomTextureView, blurTextureView };
+    return { sceneTextureView, bloomTextureView, blurVTextureView, blurHTextureView };
 }
 
-export function createPostProcessResources(device, bindLayouts, renderTextureViews) {
+export function createPostProcessResources(device, bindLayouts, renderTextureViews, buffers) {
 
     const bloomSampler = device.createSampler({
         magFilter: "linear",
@@ -52,8 +60,9 @@ export function createPostProcessResources(device, bindLayouts, renderTextureVie
         entries: [
             { binding: 0, resource: renderTextureViews.sceneTextureView },
             { binding: 1, resource: sceneSampler },
-            { binding: 2, resource: renderTextureViews.blurTextureView },
-            { binding: 3, resource: bloomSampler }
+            { binding: 2, resource: renderTextureViews.blurVTextureView },
+            { binding: 3, resource: bloomSampler },
+            { binding: 4, resource: { buffer: buffers.bloomStrBuffer } }
         ],
     });
 
@@ -65,15 +74,23 @@ export function createPostProcessResources(device, bindLayouts, renderTextureVie
         ],
     });
 
-    const blurBindGroup = device.createBindGroup({
+    const blurHBindGroup = device.createBindGroup({
         layout: bindLayouts.bloomBindGroupLayout,
         entries: [
             { binding: 0, resource: renderTextureViews.bloomTextureView },
             { binding: 1, resource: bloomSampler }
         ],
     });
+    const blurVBindGroup = device.createBindGroup({
+        layout: bindLayouts.bloomBindGroupLayout,
+        entries: [
+            { binding: 0, resource: renderTextureViews.blurHTextureView },
+            { binding: 1, resource: bloomSampler }
+        ],
+    });
 
-    return { postProcessBindGroup, bloomBindGroup, blurBindGroup };
+
+    return { postProcessBindGroup, bloomBindGroup, blurVBindGroup, blurHBindGroup };
 }
 
 export async function loadShaders(device) {
@@ -120,6 +137,7 @@ export async function setupUI(device, buffers) {
     const inputLightingY = document.querySelector("#input-lighting-y input");
     const inputLightingZ = document.querySelector("#input-lighting-z input");
     const inputLightingW = document.querySelector("#input-lighting-w input");
+    const inputBloomStr = document.querySelector("#input-bloom-str input");
     inputLightingX.addEventListener("input", (e) => {
         globals.lightDirection[0] = e.target.value;
         device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
@@ -135,6 +153,10 @@ export async function setupUI(device, buffers) {
     inputLightingW.addEventListener("input", (e) => {
         globals.lightDirection[3] = e.target.value;
         device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
+    });
+    inputBloomStr.addEventListener("input", (e) => {
+        globals.bloomStr[0] = e.target.value;
+        device.queue.writeBuffer(buffers.bloomStrBuffer, 0, globals.bloomStr);
     });
 
     const menuExitButton = document.getElementById("exit-button");
@@ -190,7 +212,15 @@ export async function setupBuffers(device) {
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
     });
     device.queue.writeBuffer(cameraPositionBuffer, 0, globals.cameraPosition);
-    return { mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer }
+
+    const bloomStrBuffer = device.createBuffer({
+        label: "Bloom Str Buffer",
+        size: 3 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    device.queue.writeBuffer(bloomStrBuffer, 0, globals.bloomStr);
+
+    return { mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer, bloomStrBuffer }
 }
 
 export async function createDepthTexture(device, canvas) {
