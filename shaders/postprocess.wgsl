@@ -41,19 +41,19 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
 @fragment
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     // let uvWarped = crtWarp(input.uv);
-    // var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
-    var color = chromaticAberration(input.uv,0.0005);
-    let bloomColor = textureSample(bloomTexture, bloomSampler, input.uv).rgb;
-    color += bloomColor * bloomStrength.r;
+    var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
+    // var color = chromaticAberration(input.uv,0.0005);
+    // let bloomColor = textureSample(bloomTexture, bloomSampler, input.uv).rgb;
+    // color += bloomColor * bloomStrength.r;
 
     // color += motionBlur(input.uv);
     // color = applyExposure(color);
-    color = stylizedShadows(color);
+    // color = stylizedShadows(color);
     // color = scanlines(input.uv, color);
     // color = scanlines2(input.uv, color);
-    color += randomNoise(input.uv) * 0.05; 
+    // color += randomNoise(input.uv) * 0.05; 
     // color = posterize(color, 12);
-    color = vignette(input.uv, color);
+    // color = vignette(input.uv, color);
     // color += invertColor(color)*0.00001;
 
     return vec4<f32>(color, 1.0);

@@ -9,7 +9,7 @@ export async function loadPointLightObjects(device, bindLayouts, buffers, numLig
     objectsToAdd.push(point);
 
     for (let i = 0; i < numLights; i++) {
-        const angle = (i / numLights) * Math.PI * 2; 
+        const angle = (i / numLights) * Math.PI * 2;
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
 
@@ -19,7 +19,7 @@ export async function loadPointLightObjects(device, bindLayouts, buffers, numLig
                 obj.vertexBuffer = model.vertexBuffer;
                 obj.indexBuffer = model.indexBuffer;
                 obj.indices = model.indices;
-                obj.position = vec3.fromValues(x, 0.0, z); 
+                obj.position = vec3.fromValues(x, 0.0, z);
                 obj.scale = vec3.fromValues(0.5, 0.5, 0.5);
                 obj.modelMatrixBuffer = device.createBuffer({
                     label: "Model Matrix Buffer",
@@ -59,38 +59,40 @@ export async function loadPointLightObjects(device, bindLayouts, buffers, numLig
         size: pointLightObjects.length * 4 * 4,
         usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
     });
-   
+
 
     return { pointLightObjects, pointLightPositionsBuffer, pointLightColorsBuffer };
 }
-
-
 export async function loadObjects(device, bindLayouts, buffers, pointLightObjects) {
     const gameObjects = [];
-    const instance_count = 1;
-
-    const modelPaths = [
-        { name: "imp", url: "resources/girl/model.glb" },
-    ];
 
     const gameObjectMap = {};
-    for (const modelInfo of modelPaths) {
-        const gameObject = new GameObject(device);
-        await gameObject.addModel(modelInfo.url, device);
-        gameObject.rotation = vec3.fromValues(0,10,0);
-        gameObjectMap[modelInfo.name] = gameObject;
-    }
 
-    for (let i = 0; i < instance_count; i++) {
-        const modelKeys = Object.keys(gameObjectMap);
-        const selectedModelKey = modelKeys[Math.floor(Math.random() * modelKeys.length)];
-        const referenceObj = gameObjectMap[selectedModelKey];
-        for (const model of referenceObj.models) {
+    // Create and initialize objects
+    const girlObject = new GameObject(device);
+    await girlObject.addModel("resources/girl/model.glb", device);
+    girlObject.rotation = vec3.fromValues(0, 6, 0);
+    girlObject.position = vec3.fromValues(0, 0, 2);
+    gameObjectMap["imp"] = girlObject;
+
+    const grassObject = new GameObject(device);
+    await grassObject.addModel("resources/grass/model.glb", device);
+    grassObject.rotation = vec3.fromValues(0, 6, 0);
+    grassObject.position = vec3.fromValues(0, 0, 2);
+    grassObject.scale = vec3.fromValues(10,10,10);
+    gameObjectMap["grass"] = grassObject;
+
+    // Iterate over the map and create instances for each object
+    Object.keys(gameObjectMap).forEach((key) => {
+        const referenceObj = gameObjectMap[key];
+
+        // For each model of the reference object, create an instance
+        referenceObj.models.forEach((model) => {
             const obj = new GameObject();
             obj.vertexBuffer = model.vertexBuffer;
             obj.indexBuffer = model.indexBuffer;
             obj.indices = model.indices;
-            obj.position = vec3.fromValues(0.0, 0.0, 0.0);
+            obj.position = referenceObj.position;
             obj.modelMatrixBuffer = device.createBuffer({
                 label: "Model Matrix Buffer",
                 size: 4 * 16,
@@ -121,10 +123,12 @@ export async function loadObjects(device, bindLayouts, buffers, pointLightObject
             });
 
             gameObjects.push(obj);
-        }
-    }
+        });
+    });
+
     return gameObjects;
 }
+
 
 
 // let val = Math.random();

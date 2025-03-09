@@ -10,9 +10,9 @@ fn bloomMain(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
     return vec4<f32>(bloomColor, color.a);
 }
 
-const KERNEL_SIZE: i32 = 10;
+const KERNEL_SIZE: i32 = 5;
 const KERNEL: array<f32, 5> = array<f32, 5>(0.227, 0.194, 0.121, 0.054, 0.016);
-const OFFSET_SCALE: f32 =1.5;
+const OFFSET_SCALE: f32 =1;
 
 @fragment
 fn blurVMain(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {

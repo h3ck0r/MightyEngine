@@ -22,25 +22,53 @@
             </div>
             <div id="input-lighting-x" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">LightingX:</span>
-                <div><input type="range" min="0" max="10" step="0.1"/></div>
+                <div>
+                    <input type="range" min="-100" max="100" step="0.1" id="lighting-x"
+                        oninput="updateValue('lighting-x', this.value)" />
+                    <span class="no-events" id="lighting-x-value">0</span>
+                </div>
             </div>
             <div id="input-lighting-y" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">LightingY:</span>
-                <div><input type="range" min="0" max="10" step="0.1"/></div>
+                <div>
+                    <input type="range" min="-100" max="100" step="0.1" id="lighting-y"
+                        oninput="updateValue('lighting-y', this.value)" />
+                    <span class="no-events" id="lighting-y-value">0</span>
+                </div>
             </div>
             <div id="input-lighting-z" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">LightingZ:</span>
-                <div><input type="range" min="0" max="10" step="0.1"/></div>
+                <div>
+                    <input type="range" min="-100" max="100" step="0.1" id="lighting-z"
+                        oninput="updateValue('lighting-z', this.value)" />
+                    <span class="no-events" id="lighting-z-value">0</span>
+                </div>
             </div>
             <div id="input-lighting-w" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">Intensity:</span>
-                <div><input type="range" min="0" max="10" value="1.0" step="0.1" /></div>
+                <div>
+                    <input type="range" min="0" max="2" value="1.0" step="0.1" id="lighting-w"
+                        oninput="updateValue('lighting-w', this.value)" />
+                    <span class="no-events" id="lighting-w-value">1.0</span>
+                </div>
             </div>
             <div id="input-bloom-str" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">Bloom Str:</span>
-                <div><input type="range" min="0" max="1" step="0.01" value="1" /></div>
+                <div>
+                    <input type="range" min="0" max="1" step="0.01" value="1" id="bloom-str"
+                        oninput="updateValue('bloom-str', this.value)" />
+                    <span class="no-events" id="bloom-str-value">1</span>
+                </div>
             </div>
         </div>
+
+        <script>
+            // Function to update the value displayed next to the slider
+            function updateValue(inputId, value) {
+                document.getElementById(inputId + '-value').textContent = value;
+            }
+        </script>
+
     </div>
     <canvas id="render-field" width="512" height="512"></canvas>
     <script type="module" src="main.js"></script>

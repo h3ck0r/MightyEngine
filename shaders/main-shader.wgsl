@@ -72,19 +72,6 @@ fn vertexMain(
 
     return output;
 }
-
-fn distributionGGX(N: vec3<f32>, H: vec3<f32>, roughness: f32) -> f32 {
-    let a = roughness * roughness;
-    let a2 = a * a;
-    let NdotH = max(dot(N, H), 0.0);
-    let NdotH2 = NdotH * NdotH;
-
-    let num = a2;
-    let denom = (NdotH2 * (a2 - 1.0) + 1.0);
-    
-    return num / (3.14159265358979323846 * denom * denom);
-}
-
 @fragment
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let texColor = textureSample(textureImage, samplerLoader, input.fragUV);
@@ -105,12 +92,55 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
 
     let viewDir = normalize(cameraPosition - input.worldPos);
 
-    let finalColor = computeLighting(mappedNormal, viewDir, input.worldPos, texColor.rgb, roughness, metalness, specularColor, ao);
+    let finalColor = computeAnimeLighting(mappedNormal, viewDir, input.worldPos, texColor.rgb, roughness, metalness, specularColor, ao);
 
     return vec4<f32>(finalColor, texColor.a);
 }
+fn computeAnimeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, ao: f32, metalness: f32, specularColor: vec3<f32>, roughness: f32) -> vec3<f32> {
+    var result: vec3<f32> = vec3<f32>(0.0);
+    
+    let L_dir = normalize(lightDirection.rgb);
+    let NdotL = dot(N, L_dir);
+    
+    let lightSize = 0.7; 
+    let lightEdge = max(0.0, 1.0 - abs(NdotL) / lightSize);
+    let shadowColor = vec3<f32>(1, 0.1, 0.1);  
+    
+    let lightIntensity = clamp(lightEdge * 0.9 + 0.9, 0.6, 1.0); 
+    let finalColor = mix(shadowColor, baseColor, lightIntensity);
 
-fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, roughness: f32, metalness: f32, specularColor: vec3<f32>, ao: f32) -> vec3<f32> {
+    result += finalColor*lightDirection.a;
+
+
+    return clamp(result * ao, vec3<f32>(0.0), vec3<f32>(1.0)); 
+}
+
+   
+    
+// for (var i: u32 = 0; i < NUM_POINT_LIGHTS; i = i + 1) {
+//         let lightPos = pointLightPositions[i].rgb; // Position of point light
+//         let lightColor = pointLightColors[i].rgb * pointLightColors[i].a; // Color of point light
+//         let L = normalize(lightPos - worldPos); // Direction from point light to surface
+//         let NdotL = dot(N, L);
+        
+//         // Softness based on the dot product (same idea as the main light)
+//         let lightSize = 0.7; // Softness control
+//         let lightEdge = max(0.0, 1.0 - abs(NdotL) / lightSize);
+        
+//         // Attenuate based on distance
+//         let distance = length(lightPos - worldPos);
+//         let attenuation = 1.0 / (distance * distance); // Simple inverse square falloff
+        
+//         // Bloom-like effect to keep it subtle, no over-brightness
+//         let lightIntensity = clamp(lightEdge * attenuation, 0.0, 1.0);
+        
+//         // Combine the point light color with the base color
+//         let diffuse = baseColor * lightIntensity * lightColor;
+//         result += diffuse * 0.3; // Control the amount of light contribution (subtle)
+//     }
+
+
+fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, ao: f32, metalness: f32, specularColor: vec3<f32>,  roughness: f32) -> vec3<f32> {
     var result: vec3<f32> = vec3<f32>(0.0);
 
     let dielectricF0 = vec3<f32>(0.04);
@@ -161,6 +191,17 @@ fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: v
 }
 
 
+fn distributionGGX(N: vec3<f32>, H: vec3<f32>, roughness: f32) -> f32 {
+    let a = roughness * roughness;
+    let a2 = a * a;
+    let NdotH = max(dot(N, H), 0.0);
+    let NdotH2 = NdotH * NdotH;
+
+    let num = a2;
+    let denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    
+    return num / (3.14159265358979323846 * denom * denom);
+}
 
 fn fresnelSchlick(cosTheta: f32, F0: vec3<f32>) -> vec3<f32> {
     return F0 + (vec3<f32>(1.0) - F0) * pow(1.0 - cosTheta, 5.0);

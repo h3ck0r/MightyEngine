@@ -55,14 +55,14 @@ export async function loadSkybox(device, bindLayouts, buffers) {
         usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
     });
     device.queue.writeBuffer(skyboxIndexBuffer, 0, skyboxIndices);
-
+    let skyboxUri = "resources/animeskycubemap/"
     const skyboxImages = [
-        "resources/spacecubemap/right.jpg",
-        "resources/spacecubemap/left.jpg",
-        "resources/spacecubemap/top.jpg",
-        "resources/spacecubemap/bottom.jpg",
-        "resources/spacecubemap/front.jpg",
-        "resources/spacecubemap/back.jpg"
+        skyboxUri + "right.jpg",
+        skyboxUri + "left.jpg",
+        skyboxUri + "top.jpg",
+        skyboxUri + "bottom.jpg",
+        skyboxUri + "front.jpg",
+        skyboxUri + "back.jpg"
     ];
 
     const skyboxTexture = await loadCubemapTexture(device, skyboxImages);

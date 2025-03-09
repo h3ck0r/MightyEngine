@@ -1,9 +1,9 @@
 import { loadShader } from "./utils.js"
 
 export const globals = {
-    lightDirection: new Float32Array([2, 2, 0, 1]),
-    bloomStr: new Float32Array([1, 0, 0]),
-    cameraPosition: new Float32Array([0, 0, 0]),
+    lightDirection: new Float32Array([10, 10, 0, 1]),
+    bloomStr: new Float32Array([0.1, 0, 0]),
+    cameraPosition: new Float32Array([0, 1, 1]),
     cameraRotation: [0, 0],
     keyboardKeys: {},
     mouseDelta: { x: 0, y: 0 },
