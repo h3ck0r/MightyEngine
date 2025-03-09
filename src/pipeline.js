@@ -23,7 +23,19 @@ export function createPipeline(device, canvasFormat, shaderModules, bindLayouts)
             module: shaderModules.mainShaderModule,
             entryPoint: "fragmentMain",
             targets: [{
-                format: canvasFormat
+                format: canvasFormat,
+                blend: {
+                    color: {
+                        srcFactor: "src-alpha",
+                        dstFactor: "one-minus-src-alpha",
+                        operation: "add"
+                    },
+                    alpha: {
+                        srcFactor: "one",
+                        dstFactor: "one-minus-src-alpha",
+                        operation: "add"
+                    }
+                }
             }]
         },
 
@@ -54,7 +66,8 @@ export function createPipeline(device, canvasFormat, shaderModules, bindLayouts)
             module: shaderModules.skyboxShaderModule,
             entryPoint: "fragmentMain",
             targets: [{
-                format: canvasFormat
+                format: canvasFormat,
+                
             }]
         },
         depthStencil: {

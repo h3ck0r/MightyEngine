@@ -70,14 +70,14 @@ export async function loadObjects(device, bindLayouts, buffers, pointLightObject
     const instance_count = 1;
 
     const modelPaths = [
-        { name: "imp", url: "resources/tavern/model.glb" },
+        { name: "imp", url: "resources/girl/model.glb" },
     ];
 
     const gameObjectMap = {};
     for (const modelInfo of modelPaths) {
         const gameObject = new GameObject(device);
         await gameObject.addModel(modelInfo.url, device);
-        // gameObject.scale = vec3.fromValues(0.01, 0.01, 0.01);
+        gameObject.rotation = vec3.fromValues(0,10,0);
         gameObjectMap[modelInfo.name] = gameObject;
     }
 
@@ -96,6 +96,7 @@ export async function loadObjects(device, bindLayouts, buffers, pointLightObject
                 size: 4 * 16,
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
             });
+            obj.rotation = referenceObj.rotation;
             obj.scale = referenceObj.scale;
             obj.bindGroup = device.createBindGroup({
                 layout: bindLayouts.mainBindGroupLayout,

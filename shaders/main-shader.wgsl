@@ -96,6 +96,10 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     let roughness = roughnessSample.g;
     let ao = roughnessSample.r;
 
+    if (texColor.a < 0.1) {
+        discard;
+    }
+
     let TBN = mat3x3<f32>(input.fragTangent, input.fragBitangent, input.fragNormal);
     let mappedNormal = normalize(TBN * normalSample);
 
@@ -103,7 +107,6 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
 
     let finalColor = computeLighting(mappedNormal, viewDir, input.worldPos, texColor.rgb, roughness, metalness, specularColor, ao);
 
-    let gammaCorrected = pow(finalColor, vec3<f32>(1.0 / 2.2));
     return vec4<f32>(finalColor, texColor.a);
 }
 

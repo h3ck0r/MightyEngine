@@ -1,7 +1,7 @@
 import { loadShader } from "./utils.js"
 
 export const globals = {
-    lightDirection: new Float32Array([1, 1, 1, 1]),
+    lightDirection: new Float32Array([2, 2, 0, 1]),
     bloomStr: new Float32Array([1, 0, 0]),
     cameraPosition: new Float32Array([0, 0, 0]),
     cameraRotation: [0, 0],
@@ -9,6 +9,9 @@ export const globals = {
     mouseDelta: { x: 0, y: 0 },
     aspect: 1,
     mouseSensitivity: 0.002,
+    moveSpeed: 0.01,
+    nearCamera: 0.01,
+    farCamer: 100
 }
 
 export function createRenderTextureViews(device, canvas, canvasFormat) {

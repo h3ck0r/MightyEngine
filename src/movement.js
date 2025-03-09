@@ -23,7 +23,7 @@ export function updateCamera(modelViewProjectionMatrix) {
     let up = vec3.fromValues(0, 1, 0);
     vec3.cross(right, forward, up);
 
-    let moveSpeed = 0.1;
+    let moveSpeed = globals.moveSpeed;
     let movement = vec3.create();
 
     if (globals.keyboardKeys["w"]) {
@@ -53,7 +53,7 @@ export function updateCamera(modelViewProjectionMatrix) {
     mat4.lookAt(viewMatrix, globals.cameraPosition, target, up);
 
     let projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, Math.PI / 4, globals.aspect, 0.1, 100);
+    mat4.perspective(projectionMatrix, Math.PI / 4, globals.aspect, globals.nearCamera, globals.farCamer);
 
     mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
 }
