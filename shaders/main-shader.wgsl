@@ -48,6 +48,8 @@ var specularColorImage: texture_2d<f32>;
 @group(0) @binding(15)
 var specularColorLoader: sampler;
 
+@group(0) @binding(16)
+var<uniform> materialAttributesBuffer: vec4<f32>;
 
 @vertex
 fn vertexMain(
@@ -94,7 +96,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
 
     let finalColor = computeAnimeLighting(mappedNormal, viewDir, input.worldPos, texColor.rgb, roughness, metalness, specularColor, ao);
 
-    return vec4<f32>(finalColor, texColor.a);
+    return vec4<f32>(finalColor, texColor.a*materialAttributesBuffer.r);
 }
 fn computeAnimeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, ao: f32, metalness: f32, specularColor: vec3<f32>, roughness: f32) -> vec3<f32> {
     var result: vec3<f32> = vec3<f32>(0.0);
@@ -114,30 +116,6 @@ fn computeAnimeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseCol
 
     return clamp(result * ao, vec3<f32>(0.0), vec3<f32>(1.0)); 
 }
-
-   
-    
-// for (var i: u32 = 0; i < NUM_POINT_LIGHTS; i = i + 1) {
-//         let lightPos = pointLightPositions[i].rgb; // Position of point light
-//         let lightColor = pointLightColors[i].rgb * pointLightColors[i].a; // Color of point light
-//         let L = normalize(lightPos - worldPos); // Direction from point light to surface
-//         let NdotL = dot(N, L);
-        
-//         // Softness based on the dot product (same idea as the main light)
-//         let lightSize = 0.7; // Softness control
-//         let lightEdge = max(0.0, 1.0 - abs(NdotL) / lightSize);
-        
-//         // Attenuate based on distance
-//         let distance = length(lightPos - worldPos);
-//         let attenuation = 1.0 / (distance * distance); // Simple inverse square falloff
-        
-//         // Bloom-like effect to keep it subtle, no over-brightness
-//         let lightIntensity = clamp(lightEdge * attenuation, 0.0, 1.0);
-        
-//         // Combine the point light color with the base color
-//         let diffuse = baseColor * lightIntensity * lightColor;
-//         result += diffuse * 0.3; // Control the amount of light contribution (subtle)
-//     }
 
 
 fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, ao: f32, metalness: f32, specularColor: vec3<f32>,  roughness: f32) -> vec3<f32> {

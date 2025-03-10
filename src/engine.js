@@ -120,7 +120,7 @@ export class Engine {
         blurHPass.draw(6);
         blurHPass.end();
 
-        const blurVPass = createRenderPass(encoder, this.renderTextureViews.blurVTextureView); 
+        const blurVPass = createRenderPass(encoder, this.renderTextureViews.blurVTextureView);
         blurVPass.setPipeline(this.pipelines.blurVPipeline);
         blurVPass.setBindGroup(0, this.postProcessResources.blurVBindGroup);
         blurVPass.draw(6);
@@ -136,36 +136,52 @@ export class Engine {
     }
     renderObjects(pass) {
         pass.setPipeline(this.pipelines.mainPipeline);
+
         for (let i = 0; i < this.gameObjects.length; i++) {
             const obj = this.gameObjects[i];
-            // if (!obj.velocity) {
-            //     obj.velocity = vec3.fromValues(
-            //         (Math.random() - 0.5) * 0.01,
-            //         (Math.random() - 0.5) * 0.01,
-            //         (Math.random() - 0.5) * 0.01
-            //     );
-            // }
+            if (!obj.isTransparent) {
+                obj.updateTransform();
 
-            // if (!obj.rotationVelocity) {
-            //     obj.rotationVelocity = vec3.fromValues(
-            //         (Math.random() - 0.5) * 0.01,
-            //         (Math.random() - 0.5) * 0.01,
-            //         (Math.random() - 0.5) * 0.01,
-            //     );
-            // }
+                pass.setVertexBuffer(0, obj.vertexBuffer);
+                pass.setIndexBuffer(obj.indexBuffer, "uint32");
 
-            // vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
-            // vec3.add(obj.position, obj.position, obj.velocity);
+                this.device.queue.writeBuffer(obj.modelMatrixBuffer, 0, obj.modelMatrix);
 
-            obj.updateTransform();
+                pass.setBindGroup(0, obj.bindGroup);
+                pass.drawIndexed(obj.indices.length);
+            }
+        }
 
-            pass.setVertexBuffer(0, obj.vertexBuffer);
-            pass.setIndexBuffer(obj.indexBuffer, "uint32");
-
-            this.device.queue.writeBuffer(obj.modelMatrixBuffer, 0, obj.modelMatrix);
-
-            pass.setBindGroup(0, obj.bindGroup);
-            pass.drawIndexed(obj.indices.length);
+        pass.setPipeline(this.pipelines.transparentPipeline);
+        for (let i = 0; i < this.gameObjects.length; i++) {
+            const obj = this.gameObjects[i];
+            if (obj.isTransparent) {
+                obj.updateTransform();
+                pass.setVertexBuffer(0, obj.vertexBuffer);
+                pass.setIndexBuffer(obj.indexBuffer, "uint32");
+                this.device.queue.writeBuffer(obj.modelMatrixBuffer, 0, obj.modelMatrix);
+                pass.setBindGroup(0, obj.bindGroup);
+                pass.drawIndexed(obj.indices.length);
+            }
         }
     }
 }
+
+// if (!obj.velocity) {
+//     obj.velocity = vec3.fromValues(
+//         (Math.random() - 0.5) * 0.01,
+//         (Math.random() - 0.5) * 0.01,
+//         (Math.random() - 0.5) * 0.01
+//     );
+// }
+
+// if (!obj.rotationVelocity) {
+//     obj.rotationVelocity = vec3.fromValues(
+//         (Math.random() - 0.5) * 0.01,
+//         (Math.random() - 0.5) * 0.01,
+//         (Math.random() - 0.5) * 0.01,
+//     );
+// }
+
+// vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
+// vec3.add(obj.position, obj.position, obj.velocity);

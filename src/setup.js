@@ -10,6 +10,7 @@ export const globals = {
     aspect: 1,
     mouseSensitivity: 0.002,
     moveSpeed: 0.01,
+    baseMoveSpeed: 0.01,
     nearCamera: 0.01,
     farCamer: 100
 }

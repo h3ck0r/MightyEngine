@@ -19,6 +19,7 @@ export function createBindLayouts(device) {
             { binding: 13, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
             { binding: 14, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // specular
             { binding: 15, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
+            { binding: 16, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // opacity
         ]
     });
 

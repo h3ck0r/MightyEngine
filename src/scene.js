@@ -68,27 +68,26 @@ export async function loadObjects(device, bindLayouts, buffers, pointLightObject
 
     const gameObjectMap = {};
 
-    // Create and initialize objects
     const girlObject = new GameObject(device);
     await girlObject.addModel("resources/girl/model.glb", device);
     girlObject.rotation = vec3.fromValues(0, 6, 0);
-    girlObject.position = vec3.fromValues(0, 0, 2);
+    girlObject.position = vec3.fromValues(2, 0, 2);
     gameObjectMap["imp"] = girlObject;
 
     const grassObject = new GameObject(device);
-    await grassObject.addModel("resources/grass/model.glb", device);
-    grassObject.rotation = vec3.fromValues(0, 6, 0);
-    grassObject.position = vec3.fromValues(0, 0, 2);
-    grassObject.scale = vec3.fromValues(10,10,10);
-    gameObjectMap["grass"] = grassObject;
+    await grassObject.addModel("resources/gryffindor/model.glb", device);
+    // grassObject.rotation = vec3.fromValues(0, 6, 0);
+    // grassObject.position = vec3.fromValues(0, 0, 2);
+    // grassObject.scale = vec3.fromValues(10,10,10);
+    gameObjectMap["office"] = grassObject;
 
-    // Iterate over the map and create instances for each object
     Object.keys(gameObjectMap).forEach((key) => {
         const referenceObj = gameObjectMap[key];
 
-        // For each model of the reference object, create an instance
         referenceObj.models.forEach((model) => {
             const obj = new GameObject();
+
+            obj.name = model.name;
             obj.vertexBuffer = model.vertexBuffer;
             obj.indexBuffer = model.indexBuffer;
             obj.indices = model.indices;
@@ -100,6 +99,8 @@ export async function loadObjects(device, bindLayouts, buffers, pointLightObject
             });
             obj.rotation = referenceObj.rotation;
             obj.scale = referenceObj.scale;
+            obj.isTransparent = model.isTransparent;
+
             obj.bindGroup = device.createBindGroup({
                 layout: bindLayouts.mainBindGroupLayout,
                 entries: [
@@ -119,6 +120,7 @@ export async function loadObjects(device, bindLayouts, buffers, pointLightObject
                     { binding: 13, resource: model.metalnessSampler },
                     { binding: 14, resource: model.specularColorTexture.createView() },
                     { binding: 15, resource: model.specularColorSampler },
+                    { binding: 16, resource: { buffer: model.materialAttributesBuffer } }
                 ]
             });
 

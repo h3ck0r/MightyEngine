@@ -49,9 +49,17 @@ export class GameObject {
                 size: indices.length * 4,
                 usage: GPUBufferUsage.INDEX | GPUBufferUsage.COPY_DST
             });
-            this.device.queue.writeBuffer(indexBuffer, 0, indices);
 
+            const materialAttributesBuffer = this.device.createBuffer({
+                label: "Material Attributes Buffer",
+                size: 4*4, // currently 4 floats for aligning
+                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+            });
+            this.device.queue.writeBuffer(materialAttributesBuffer, 0, new Float32Array([material.opacity]));
+
+            this.device.queue.writeBuffer(indexBuffer, 0, indices);
             this.models.push({
+                name: obj.name,
                 vertices,
                 indices,
                 albedoTexture: albedoData.texture,
@@ -65,7 +73,9 @@ export class GameObject {
                 specularColorTexture: specularColorData.texture,
                 specularColorSampler: specularColorData.sampler,
                 vertexBuffer,
-                indexBuffer
+                indexBuffer,
+                isTransparent: material.transparent,
+                materialAttributesBuffer
             });
         }
     }
@@ -91,7 +101,10 @@ export class GameObject {
         );
         const sampler = this.device.createSampler({
             magFilter: 'linear',
-            minFilter: 'linear'
+            minFilter: 'linear',
+            addressModeU: 'repeat',
+            addressModeV: 'repeat',
+            addressModeW: 'repeat'
         });
         return { texture, sampler };
     }
