@@ -1,35 +1,16 @@
 {
     "objects": [
         {
-            "name": "girl",
-            "model": "resources/girl/model.glb",
+            "name": "book",
+            "model": "resources/book/model.glb",
             "position": [
-                0,
-                0,
-                5
-            ],
-            "rotation": [
-                0,
-                6,
-                0
-            ],
-            "scale": [
-                1,
-                1,
-                1
-            ]
-        },
-        {
-            "name": "office",
-            "model": "resources/gryffindor/model.glb",
-            "position": [
-                0,
+                2,
                 0,
                 2
             ],
             "rotation": [
                 0,
-                0,
+                6,
                 0
             ],
             "scale": [
@@ -55,6 +36,6 @@
         }
     ],
     "skybox": {
-        "texture": "resources/animeskycubemap"
+        "texture": "resources/spacecubemap"
     }
 }

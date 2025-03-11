@@ -1,7 +1,8 @@
 import { vec3, mat4 } from "gl-matrix";
 import { updateFPS } from "./ui.js";
-import { setup, loadShaders, setupBuffers, createPostProcessResources, createRenderTextureViews, createDepthTexture, setupUI } from "./setup.js";
+import { setup, loadShaders, setupBuffers, createPostProcessResources, createRenderTextureViews, createDepthTexture } from "./setup.js";
 import { Scene } from "./scene.js"
+import { setupUI } from "./ui.js"
 import { createPipeline } from "./pipeline.js"
 import { createBindLayouts } from "./bind-layouts.js";
 import { updateCamera } from "./movement.js"
@@ -23,8 +24,9 @@ export class Engine {
         this.bindLayouts = createBindLayouts(this.device);
         this.postProcessResources = createPostProcessResources(this.device, this.bindLayouts, this.renderTextureViews, this.buffers);
 
-
-        await this.loadScene();
+        this.scenesCache = {};
+        this.currentSceneName = null;
+        await this.loadScene("scenes/gryffindor.json");
 
         this.pipelines = createPipeline(this.device, canvasFormat, this.shaderModules, this.bindLayouts);
         this.depthView = await createDepthTexture(this.device, canvas);
@@ -34,6 +36,10 @@ export class Engine {
     }
     run() {
         const renderLoop = () => {
+            if (!this.running) {
+                requestAnimationFrame(renderLoop);
+                return;
+            }
             this.update(this.device, this.buffers, this.modelViewProjectionMatrix);
             const encoder = this.device.createCommandEncoder();
             this.renderScene(encoder);
@@ -45,10 +51,43 @@ export class Engine {
         };
         requestAnimationFrame(renderLoop);
     }
-    async loadScene(){
-        this.scene = new Scene(this.device, this.bindLayouts, this.buffers);
-        await this.scene.loadScene("scenes/gryffindor.json");
+    async loadScene(sceneName) {
+        if (this.currentSceneName === sceneName) {
+            return; 
+        }
 
+        this.running = false;
+
+        if (this.scenesCache[sceneName]) {
+            this.scene = this.scenesCache[sceneName];
+        } else {
+            this.scene = new Scene(this.device, this.bindLayouts, this.buffers);
+            await this.scene.loadScene(sceneName);
+            this.scenesCache[sceneName] = this.scene; 
+        }
+
+        this.currentSceneName = sceneName;
+        this.running = true;
+    }
+    unloadScene() {
+        if (!this.scene) return;
+
+        this.scene.gameObjects.forEach(obj => {
+            obj.vertexBuffer?.destroy();
+            obj.indexBuffer?.destroy();
+            obj.modelMatrixBuffer?.destroy();
+        });
+
+        this.scene.pointLightObjects.forEach(light => {
+            light.modelMatrixBuffer?.destroy();
+        });
+
+        this.scene.skyboxBuffer?.destroy();
+        this.scene.skyboxIndexBuffer?.destroy();
+        this.scene.pointLightPositionsBuffer?.destroy();
+        this.scene.pointLightColorsBuffer?.destroy();
+
+        this.scene = null;
     }
     renderScene(encoder) {
         const scenePass = createRenderPass(encoder, this.renderTextureViews.sceneTextureView, this.depthView)

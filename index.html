@@ -60,10 +60,14 @@
                     <span class="no-events" id="bloom-str-value">1</span>
                 </div>
             </div>
+            <div>
+                <label for="scene-selector">Select Scene:</label>
+                <select id="scene-selector"></select>
+            </div>
+
         </div>
 
         <script>
-            // Function to update the value displayed next to the slider
             function updateValue(inputId, value) {
                 document.getElementById(inputId + '-value').textContent = value;
             }

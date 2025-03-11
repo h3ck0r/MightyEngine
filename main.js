@@ -1,7 +1,10 @@
 import { Engine } from "./src/engine.js";
 
+const engine = new Engine();
+window.engine = engine;
+
 async function main() {
-    const engine = new Engine();
+    console.log("Welcome to Mighty Engine ₍^. .^₎⟆")
     await engine.init();
     engine.run();
 }
