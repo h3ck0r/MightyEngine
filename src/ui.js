@@ -90,6 +90,8 @@ export async function setupUI(device, buffers) {
         }
     })
     initSceneSelector();
+    initGraphicsSelector();
+    initPostProcessSelectors();
 }
 
 
@@ -113,5 +115,60 @@ function initSceneSelector() {
         const engine = window.engine;
         // engine.unloadScene();
         engine.loadScene(selectedScene);
+    });
+}
+
+
+function initGraphicsSelector() {
+    const sceneSelector = document.getElementById("graphics-selector");
+    const scenes = [
+        { name: "Anime", id: 0 },
+        { name: "PBR", id: 1 },
+    ];
+
+    scenes.forEach(scene => {
+        const option = document.createElement("option");
+        option.value = scene.id;
+        option.textContent = scene.name;
+        sceneSelector.appendChild(option);
+    });
+
+    sceneSelector.addEventListener("change", (event) => {
+        const engine = window.engine;
+        engine.graphicsSettings[0] = event.target.value;
+        const graphicsBuffer = engine.buffers.graphicsSettingsBuffer;
+        engine.device.queue.writeBuffer(graphicsBuffer, 0, new Uint32Array(engine.graphicsSettings)); // 1st is graphics mode, rest reserved
+    });
+}
+function initPostProcessSelectors() {
+    const effects = {
+        "toggle-bloom": 0x01,
+        "toggle-motion-blur": 0x02,
+        "toggle-exposure": 0x04,
+        "toggle-stylized-shadows": 0x08,
+        "toggle-scanlines": 0x10,
+        "toggle-chromatic-aberration": 0x20,  
+        "toggle-random-noise": 0x40,
+        "toggle-posterize": 0x80,
+        "toggle-vignette": 0x100,
+        "toggle-invert-color": 0x200
+    };
+
+
+    const engine = window.engine;
+    const graphicsBuffer = engine.buffers.graphicsSettingsBuffer;
+    function updateGraphicsSettings() {
+        engine.graphicsSettings[1] = 0;
+        for (const [id, flag] of Object.entries(effects)) {
+            if (document.getElementById(id).checked) {
+                engine.graphicsSettings[1] |= flag;
+            }
+
+        }
+        engine.device.queue.writeBuffer(graphicsBuffer, 0, new Uint32Array(engine.graphicsSettings));
+    }
+
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener("change", updateGraphicsSettings);
     });
 }

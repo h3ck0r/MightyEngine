@@ -51,6 +51,9 @@ var specularColorLoader: sampler;
 @group(0) @binding(16)
 var<uniform> materialAttributesBuffer: vec4<f32>;
 
+@group(0) @binding(17)
+var<uniform> graphicsSettings: vec4<u32>;
+
 @vertex
 fn vertexMain(
     @location(0) position: vec3<f32>, 
@@ -94,8 +97,13 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
 
     let viewDir = normalize(cameraPosition - input.worldPos);
 
-    let finalColor = computeAnimeLighting(mappedNormal, viewDir, input.worldPos, texColor.rgb, roughness, metalness, specularColor, ao);
-
+    var finalColor = vec3<f32>(0,0,0);
+    if(graphicsSettings.r == 0){
+        finalColor = computeAnimeLighting(mappedNormal, viewDir, input.worldPos, texColor.rgb, roughness, metalness, specularColor, ao);
+    }
+    else if(graphicsSettings.r == 1){
+        finalColor = computeLighting(mappedNormal, viewDir, input.worldPos, texColor.rgb, roughness, metalness, specularColor, ao);
+    }
     return vec4<f32>(finalColor, texColor.a*materialAttributesBuffer.r);
 }
 fn computeAnimeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, ao: f32, metalness: f32, specularColor: vec3<f32>, roughness: f32) -> vec3<f32> {
@@ -117,56 +125,55 @@ fn computeAnimeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseCol
     return clamp(result * ao, vec3<f32>(0.0), vec3<f32>(1.0)); 
 }
 
-
-fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, ao: f32, metalness: f32, specularColor: vec3<f32>,  roughness: f32) -> vec3<f32> {
-    var result: vec3<f32> = vec3<f32>(0.0);
-
-    let dielectricF0 = vec3<f32>(0.04);
-    let aoFactor = mix(vec3<f32>(1.0), vec3<f32>(ao), metalness);
-    let F0 = mix(vec3<f32>(0.04), baseColor, metalness);
-
-    let L_dir = normalize(lightDirection.rgb);
-    let H_dir = normalize(V + L_dir);
-    let NDF_dir = distributionGGX(N, H_dir, roughness);
-    let G_dir = geometrySmith(N, V, L_dir, roughness);
-    let fresnel_dir = fresnelSchlick(max(dot(N, V), 0.0), F0);
-
-    let numerator_dir = NDF_dir * G_dir * fresnel_dir;
-    let denominator_dir = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L_dir), 0.0) + 0.0001;
-    let specular_dir = numerator_dir / denominator_dir*ao;
-
-    let kD_dir = vec3<f32>(1.0) - fresnel_dir;
-    let diffuse_dir = kD_dir * baseColor * max(dot(N, L_dir), 0.0) * ao;
-
-    result += (diffuse_dir + specular_dir) * lightDirection.a;
-
-    for (var i: u32 = 0; i < NUM_POINT_LIGHTS; i = i + 1) {
-        let lightPos = pointLightPositions[i];
-        let lightColor = pointLightColors[i];
-        let lightIntensity = lightColor.a;
-
-        let L = normalize(lightPos.rgb - worldPos);
-        let H = normalize(V + L);
-        let distance = length(lightPos.rgb - worldPos);
-        let attenuation = 1.0 / (distance * distance);
-        let NdotL = max(dot(N, L), 0.0);
-
-        let NDF = distributionGGX(N, H, roughness);
-        let G = geometrySmith(N, V, L, roughness);
-        let fresnel = fresnelSchlick(max(dot(N, V), 0.0), F0);
-
-        let numerator = NDF * G * fresnel;
-        let denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
-        let specular = (numerator / denominator) * lightColor.rgb * lightIntensity * attenuation*ao;
-
-        let kD = vec3<f32>(1.0) - fresnel;
-        let diffuse = kD * baseColor * NdotL * attenuation * lightColor.rgb * lightIntensity*ao;
-
-        result += diffuse + specular;
-    }
-
-    return result;
-}
+fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, roughness: f32, metalness: f32, specularColor: vec3<f32>, ao: f32) -> vec3<f32> {
+     var result: vec3<f32> = vec3<f32>(0.0);
+ 
+     let dielectricF0 = vec3<f32>(0.04);
+     let aoFactor = mix(vec3<f32>(1.0), vec3<f32>(ao), metalness);
+     let F0 = mix(dielectricF0, specularColor, metalness) * aoFactor;
+ 
+     let L_dir = normalize(lightDirection.rgb);
+     let H_dir = normalize(V + L_dir);
+     let NDF_dir = distributionGGX(N, H_dir, roughness);
+     let G_dir = geometrySmith(N, V, L_dir, roughness);
+     let fresnel_dir = fresnelSchlick(max(dot(N, V), 0.0), F0);
+ 
+     let numerator_dir = NDF_dir * G_dir * fresnel_dir;
+     let denominator_dir = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L_dir), 0.0) + 0.0001;
+     let specular_dir = numerator_dir / denominator_dir*ao;
+ 
+     let kD_dir = vec3<f32>(1.0) - fresnel_dir;
+     let diffuse_dir = kD_dir * baseColor * max(dot(N, L_dir), 0.0) * ao;
+ 
+     result += (diffuse_dir + specular_dir) * lightDirection.a;
+ 
+     for (var i: u32 = 0; i < NUM_POINT_LIGHTS; i = i + 1) {
+         let lightPos = pointLightPositions[i];
+         let lightColor = pointLightColors[i];
+         let lightIntensity = lightColor.a;
+ 
+         let L = normalize(lightPos.rgb - worldPos);
+         let H = normalize(V + L);
+         let distance = length(lightPos.rgb - worldPos);
+         let attenuation = 1.0 / (distance * distance);
+         let NdotL = max(dot(N, L), 0.0);
+ 
+         let NDF = distributionGGX(N, H, roughness);
+         let G = geometrySmith(N, V, L, roughness);
+         let fresnel = fresnelSchlick(max(dot(N, V), 0.0), F0);
+ 
+         let numerator = NDF * G * fresnel;
+         let denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
+         let specular = (numerator / denominator) * lightColor.rgb * lightIntensity * attenuation*ao;
+ 
+         let kD = vec3<f32>(1.0) - fresnel;
+         let diffuse = kD * baseColor * NdotL * attenuation * lightColor.rgb * lightIntensity*ao;
+ 
+         result += diffuse + specular;
+     }
+ 
+     return result;
+ }
 
 
 fn distributionGGX(N: vec3<f32>, H: vec3<f32>, roughness: f32) -> f32 {
@@ -196,3 +203,4 @@ fn geometrySmith(N: vec3<f32>, V: vec3<f32>, L: vec3<f32>, roughness: f32) -> f3
     let NdotL = max(dot(N, L), 0.0);
     return geometrySchlickGGX(NdotV, roughness) * geometrySchlickGGX(NdotL, roughness);
 }
+

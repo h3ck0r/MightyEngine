@@ -29,13 +29,13 @@ export class GameObject {
             const normalData = normalBitMap ? this.loadTexture(normalBitMap) : this.createDefaultTexture([128, 128, 255, 255]);
 
             const roughnessBitMap = material.roughnessMap?.source.data;
-            const roughnessData = roughnessBitMap ? this.loadTexture(roughnessBitMap) : this.createDefaultTexture([255, 255, 255, 255]);
+            const roughnessData = roughnessBitMap ? this.loadTexture(roughnessBitMap) : this.createDefaultTexture([128, 128, 128, 255]);
 
             const metalnessBitMap = material.metalnessMap?.source.data;
             const metalnessData = metalnessBitMap ? this.loadTexture(metalnessBitMap) : this.createDefaultTexture([0, 0, 0, 255]);
 
             const specularColorBitMap = material.specularColorMap?.source.data;
-            const specularColorData = specularColorBitMap ? this.loadTexture(specularColorBitMap) : this.createDefaultTexture([255, 255, 255, 255]);
+            const specularColorData = specularColorBitMap ? this.loadTexture(specularColorBitMap) : this.createDefaultTexture([64, 64, 64, 255]);
 
             const vertexBuffer = this.device.createBuffer({
                 label: "Vertex Buffer",

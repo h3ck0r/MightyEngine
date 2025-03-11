@@ -63,7 +63,8 @@ export class Scene {
                         { binding: 13, resource: model.metalnessSampler },
                         { binding: 14, resource: model.specularColorTexture.createView() },
                         { binding: 15, resource: model.specularColorSampler },
-                        { binding: 16, resource: { buffer: model.materialAttributesBuffer } }
+                        { binding: 16, resource: { buffer: model.materialAttributesBuffer } },
+                        { binding: 17, resource: { buffer: this.buffers.graphicsSettingsBuffer } }
                     ]
                 });
 

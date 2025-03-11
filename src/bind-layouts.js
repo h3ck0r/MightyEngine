@@ -20,6 +20,7 @@ export function createBindLayouts(device) {
             { binding: 14, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } }, // specular
             { binding: 15, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
             { binding: 16, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // opacity
+            { binding: 17, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // graphics settings
         ]
     });
 
@@ -58,6 +59,7 @@ export function createBindLayouts(device) {
             { binding: 2, visibility: GPUShaderStage.FRAGMENT, texture: { sampleType: "float" } },
             { binding: 3, visibility: GPUShaderStage.FRAGMENT, sampler: {} },
             { binding: 4, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } },
+            { binding: 5, visibility: GPUShaderStage.FRAGMENT, buffer: { type: "uniform" } }, // graphics settings
         ]
     });
 

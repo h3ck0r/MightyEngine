@@ -20,6 +20,16 @@
             <div id="fps-counter">
                 <span class="no-events">FPS: 0 | Frame Time: 0ms</span>
             </div>
+            <hr>
+            <div>
+                <label for="scene-selector" class="no-events">Scene:</label>
+                <select id="scene-selector"></select>
+            </div>
+            <div>
+                <label for="graphics-selector" class="no-events">Graphics Preset:</label>
+                <select id="graphics-selector"></select>
+            </div>
+            <hr>
             <div id="input-lighting-x" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">LightingX:</span>
                 <div>
@@ -52,6 +62,15 @@
                     <span class="no-events" id="lighting-w-value">1.0</span>
                 </div>
             </div>
+            <hr>
+
+
+        </div>
+        <div>
+            <span class="no-events">Post-Processing Effects:</span>
+            <div>
+                <label><input type="checkbox" id="toggle-bloom"> Bloom</label>
+            </div>
             <div id="input-bloom-str" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">Bloom Str:</span>
                 <div>
@@ -61,16 +80,34 @@
                 </div>
             </div>
             <div>
-                <label for="scene-selector">Scene:</label>
-                <select id="scene-selector"></select>
+                <label><input type="checkbox" id="toggle-motion-blur"> Motion Blur</label>
             </div>
             <div>
-                <label for="graphics-selector">Graphics Preset:</label>
-                <select id="graphics-selector"></select>
+                <label><input type="checkbox" id="toggle-exposure"> Exposure</label>
             </div>
-
+            <div>
+                <label><input type="checkbox" id="toggle-stylized-shadows"> Stylized Shadows</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-scanlines"> Scanlines</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-random-noise"> Random Noise</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-posterize"> Posterize</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-chromatic-aberration"> Chromatic Abberation</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-vignette"> Vignette</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-invert-color"> Invert Colors</label>
+            </div>
         </div>
-
+        <hr>
         <script>
             function updateValue(inputId, value) {
                 document.getElementById(inputId + '-value').textContent = value;

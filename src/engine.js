@@ -17,6 +17,7 @@ export class Engine {
         this.context = context;
         this.canvasFormat = canvasFormat;
         this.canvas = canvas;
+        this.graphicsSettings = new Uint32Array([0,0,0,0]);
 
         this.renderTextureViews = createRenderTextureViews(this.device, this.canvas, this.canvasFormat);
         this.shaderModules = await loadShaders(this.device);

@@ -11,6 +11,9 @@ var bloomSampler: sampler;
 @group(0) @binding(4)
 var<uniform> bloomStrength: vec3<f32>;
 
+@group(0) @binding(5)
+var<uniform> graphicsSettings: vec4<u32>;
+
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) uv: vec2<f32>
@@ -37,27 +40,55 @@ fn vertexMain(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
 
     return output;
 }
-
 @fragment
 fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
-    // let uvWarped = crtWarp(input.uv);
     var color = textureSample(sceneTexture, sceneSampler, input.uv).rgb;
-    // var color = chromaticAberration(input.uv,0.0005);
-    // let bloomColor = textureSample(bloomTexture, bloomSampler, input.uv).rgb;
-    // color += bloomColor * bloomStrength.r;
 
-    // color += motionBlur(input.uv);
-    // color = applyExposure(color);
-    // color = stylizedShadows(color);
-    // color = scanlines(input.uv, color);
-    // color = scanlines2(input.uv, color);
-    // color += randomNoise(input.uv) * 0.05; 
-    // color = posterize(color, 12);
-    // color = vignette(input.uv, color);
-    // color += invertColor(color)*0.00001;
+    if ((graphicsSettings.g & 0x01u) != 0u) {
+        let bloomColor = textureSample(bloomTexture, bloomSampler, input.uv).rgb;
+        color += bloomColor * bloomStrength.r;
+    }
+    
+    if ((graphicsSettings.g & 0x02u) != 0u) {
+        color += motionBlur(input.uv);
+    }
+
+    if ((graphicsSettings.g & 0x04u) != 0u) {
+        color = applyExposure(color);
+    }
+
+    if ((graphicsSettings.g & 0x08u) != 0u) {
+        color = stylizedShadows(color);
+    }
+
+    if ((graphicsSettings.g & 0x10u) != 0u) {
+        color = scanlines(input.uv, color);
+    }
+
+    if ((graphicsSettings.g & 0x20u) != 0u) {
+        color = chromaticAberration(input.uv, 0.0005);
+    }
+
+    if ((graphicsSettings.g & 0x40u) != 0u) {
+        color += randomNoise(input.uv) * 0.05; 
+    }
+
+    if ((graphicsSettings.g & 0x80u) != 0u) {
+        color = posterize(color, 12);
+    }
+
+    if ((graphicsSettings.g & 0x100u) != 0u) {
+        color = vignette(input.uv, color);
+    }
+
+    if ((graphicsSettings.g & 0x200u) != 0u) {
+        color += invertColor(color) * 0.00001;
+    }
 
     return vec4<f32>(color, 1.0);
 }
+
+
 
 
 //  ▄█    █▄   ▄█     ▄████████ ███    █▄     ▄████████  ▄█               ▄████████    ▄█    █▄       ▄████████ ████████▄     ▄████████    ▄████████    ▄████████ 

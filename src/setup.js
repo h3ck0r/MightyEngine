@@ -66,7 +66,8 @@ export function createPostProcessResources(device, bindLayouts, renderTextureVie
             { binding: 1, resource: sceneSampler },
             { binding: 2, resource: renderTextureViews.blurVTextureView },
             { binding: 3, resource: bloomSampler },
-            { binding: 4, resource: { buffer: buffers.bloomStrBuffer } }
+            { binding: 4, resource: { buffer: buffers.bloomStrBuffer } },
+            { binding: 5, resource: { buffer: buffers.graphicsSettingsBuffer } }
         ],
     });
 
@@ -158,7 +159,14 @@ export async function setupBuffers(device) {
     });
     device.queue.writeBuffer(bloomStrBuffer, 0, globals.bloomStr);
 
-    return { mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer, bloomStrBuffer }
+    const graphicsSettingsBuffer = device.createBuffer({
+        label: "Graphics Settings Buffer",
+        size: 4 * 4,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+    });
+    device.queue.writeBuffer(graphicsSettingsBuffer, 0, new Float32Array([0,0,0,0])); // 1st is graphics mode, rest reserved
+
+    return { mvpBuffer, globalLightDirectionBuffer, cameraPositionBuffer, bloomStrBuffer, graphicsSettingsBuffer }
 }
 
 export async function createDepthTexture(device, canvas) {
