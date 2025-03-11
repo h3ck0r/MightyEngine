@@ -1,0 +1,60 @@
+{
+    "objects": [
+        {
+            "name": "girl",
+            "model": "resources/girl/model.glb",
+            "position": [
+                2,
+                0,
+                2
+            ],
+            "rotation": [
+                0,
+                6,
+                0
+            ],
+            "scale": [
+                1,
+                1,
+                1
+            ]
+        },
+        {
+            "name": "office",
+            "model": "resources/gryffindor/model.glb",
+            "position": [
+                0,
+                0,
+                2
+            ],
+            "rotation": [
+                0,
+                0,
+                0
+            ],
+            "scale": [
+                1,
+                1,
+                1
+            ]
+        }
+    ],
+    "lights": [
+        {
+            "position": [
+                0,
+                0,
+                0
+            ],
+            "color": [
+                1,
+                1,
+                1,
+                10
+            ]
+        }
+    ],
+    "skybox": {
+        "texture": "resources/animeskycubemap"
+    }
+}

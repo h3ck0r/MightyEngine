@@ -1,8 +1,7 @@
 import { vec3, mat4 } from "gl-matrix";
 import { updateFPS } from "./ui.js";
 import { setup, loadShaders, setupBuffers, createPostProcessResources, createRenderTextureViews, createDepthTexture, setupUI } from "./setup.js";
-import { loadObjects, loadPointLightObjects } from "./scene.js"
-import { loadSkybox } from "./skybox.js"
+import { Scene } from "./scene.js"
 import { createPipeline } from "./pipeline.js"
 import { createBindLayouts } from "./bind-layouts.js";
 import { updateCamera } from "./movement.js"
@@ -24,9 +23,8 @@ export class Engine {
         this.bindLayouts = createBindLayouts(this.device);
         this.postProcessResources = createPostProcessResources(this.device, this.bindLayouts, this.renderTextureViews, this.buffers);
 
-        this.pointLightObjects = await loadPointLightObjects(this.device, this.bindLayouts, this.buffers);
-        this.gameObjects = await loadObjects(this.device, this.bindLayouts, this.buffers, this.pointLightObjects);
-        this.skybox = await loadSkybox(this.device, this.bindLayouts, this.buffers);
+
+        await this.loadScene();
 
         this.pipelines = createPipeline(this.device, canvasFormat, this.shaderModules, this.bindLayouts);
         this.depthView = await createDepthTexture(this.device, canvas);
@@ -47,6 +45,11 @@ export class Engine {
         };
         requestAnimationFrame(renderLoop);
     }
+    async loadScene(){
+        this.scene = new Scene(this.device, this.bindLayouts, this.buffers);
+        await this.scene.loadScene("scenes/gryffindor.json");
+
+    }
     renderScene(encoder) {
         const scenePass = createRenderPass(encoder, this.renderTextureViews.sceneTextureView, this.depthView)
         this.renderSkybox(scenePass);
@@ -65,24 +68,26 @@ export class Engine {
     updatePointLights() {
         let offset = 0;
         const radius = 5.0;
+        const localScene = this.scene;
 
-        for (let i = 0; i < this.pointLightObjects.pointLightObjects.length; i++) {
-            const obj = this.pointLightObjects.pointLightObjects[i];
+        for (let i = 0; i < localScene.pointLightObjects.length; i++) {
+            const obj = localScene.pointLightObjects[i];
 
-            const angle = this.time * 0.5 + (i * (Math.PI * 2 / this.pointLightObjects.pointLightObjects.length));
+            const angle = this.time * 0.5 + (i * (Math.PI * 2 / localScene.pointLightObjects.length));
             const x = Math.cos(angle) * radius;
             const z = Math.sin(angle) * radius;
             obj.position = vec3.fromValues(x, obj.position[1], z);
             obj.updateTransform();
-            this.device.queue.writeBuffer(this.pointLightObjects.pointLightPositionsBuffer, offset * 16, obj.position);
-            this.device.queue.writeBuffer(this.pointLightObjects.pointLightColorsBuffer, offset * 16, obj.defaultColor);
+            this.device.queue.writeBuffer(localScene.pointLightPositionsBuffer, offset * 16, obj.position);
+            this.device.queue.writeBuffer(localScene.pointLightColorsBuffer, offset * 16, obj.defaultColor);
             offset += 1;
         }
     }
     renderPointLights(encoder) {
+        const localScene = this.scene;
         const pointLightPass = createRenderPass(encoder, this.renderTextureViews.sceneTextureView, this.depthView, false, false);
         pointLightPass.setPipeline(this.pipelines.pointLightPipeline);
-        for (const model of this.pointLightObjects.pointLightObjects) {
+        for (const model of localScene.pointLightObjects) {
             model.updateTransform();
             this.device.queue.writeBuffer(model.modelMatrixBuffer, 0, model.modelMatrix);
             pointLightPass.setVertexBuffer(0, model.vertexBuffer);
@@ -95,9 +100,9 @@ export class Engine {
 
     renderSkybox(pass) {
         pass.setPipeline(this.pipelines.skyboxPipeline);
-        pass.setBindGroup(0, this.skybox.skyboxBindGroup);
-        pass.setVertexBuffer(0, this.skybox.skyboxBuffer);
-        pass.setIndexBuffer(this.skybox.skyboxIndexBuffer, "uint16");
+        pass.setBindGroup(0, this.scene.skyboxBindGroup);
+        pass.setVertexBuffer(0, this.scene.skyboxBuffer);
+        pass.setIndexBuffer(this.scene.skyboxIndexBuffer, "uint16");
         pass.drawIndexed(36);
     }
 
@@ -136,9 +141,10 @@ export class Engine {
     }
     renderObjects(pass) {
         pass.setPipeline(this.pipelines.mainPipeline);
+        const localScene = this.scene;
 
-        for (let i = 0; i < this.gameObjects.length; i++) {
-            const obj = this.gameObjects[i];
+        for (let i = 0; i < localScene.gameObjects.length; i++) {
+            const obj = localScene.gameObjects[i];
             if (!obj.isTransparent) {
                 obj.updateTransform();
 
@@ -153,8 +159,8 @@ export class Engine {
         }
 
         pass.setPipeline(this.pipelines.transparentPipeline);
-        for (let i = 0; i < this.gameObjects.length; i++) {
-            const obj = this.gameObjects[i];
+        for (let i = 0; i < localScene.gameObjects.length; i++) {
+            const obj = localScene.gameObjects[i];
             if (obj.isTransparent) {
                 obj.updateTransform();
                 pass.setVertexBuffer(0, obj.vertexBuffer);

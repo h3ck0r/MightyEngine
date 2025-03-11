@@ -107,3 +107,28 @@ export function createRenderPass(encoder, textureView, depthView = null, clearCo
     return encoder.beginRenderPass(renderPassDescriptor);
 }
 
+export async function loadCubemapTexture(device, imageUrls) {
+    const imageBlobs = await Promise.all(imageUrls.map(url => fetch(url).then(res => res.blob())));
+
+    const imageBitmaps = await Promise.all(imageBlobs.map(blob => createImageBitmap(blob)));
+
+    const width = imageBitmaps[0].width;
+    const height = imageBitmaps[0].height;
+
+    const texture = device.createTexture({
+        size: [width, height, 6],
+        format: 'rgba8unorm',
+        usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT,
+        dimension: '2d',
+    });
+
+    for (let i = 0; i < 6; i++) {
+        device.queue.copyExternalImageToTexture(
+            { source: imageBitmaps[i] },
+            { texture: texture, origin: [0, 0, i] },
+            [width, height, 1]
+        );
+    }
+
+    return texture;
+}
