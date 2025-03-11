@@ -111,19 +111,19 @@ fn computeAnimeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseCol
     
     let L_dir = normalize(lightDirection.rgb);
     let NdotL = dot(N, L_dir);
-    
+
     let lightSize = 0.7; 
-    let lightEdge = max(0.0, 1.0 - abs(NdotL) / lightSize);
+    let lightEdge = max(0.0, 1.0 - max(NdotL, 0.0) / lightSize);  
     let shadowColor = vec3<f32>(1, 0.1, 0.1);  
     
     let lightIntensity = clamp(lightEdge * 0.9 + 0.9, 0.6, 1.0); 
     let finalColor = mix(shadowColor, baseColor, lightIntensity);
 
-    result += finalColor*lightDirection.a;
-
+    result += finalColor * lightDirection.a;
 
     return clamp(result * ao, vec3<f32>(0.0), vec3<f32>(1.0)); 
 }
+
 
 fn computeLighting(N: vec3<f32>, V: vec3<f32>, worldPos: vec3<f32>, baseColor: vec3<f32>, roughness: f32, metalness: f32, specularColor: vec3<f32>, ao: f32) -> vec3<f32> {
      var result: vec3<f32> = vec3<f32>(0.0);
