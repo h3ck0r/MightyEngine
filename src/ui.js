@@ -20,8 +20,14 @@ export function updateFPS() {
 }
 
 export async function setupUI(device, buffers) {
-    window.addEventListener("keydown", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = true; });
-    window.addEventListener("keyup", (e) => { globals.keyboardKeys[e.key.toLowerCase()] = false; });
+    window.addEventListener("keydown", (e) => {
+        globals.keyboardKeys[e.code] = true;
+    });
+
+    window.addEventListener("keyup", (e) => {
+        globals.keyboardKeys[e.code] = false;
+    });
+
     window.addEventListener("mousemove", (e) => {
         if (document.pointerLockElement) {
             globals.mouseDelta.x += e.movementX * globals.mouseSensitivity;

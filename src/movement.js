@@ -22,33 +22,34 @@ export function updateCamera(modelViewProjectionMatrix) {
 
     let up = vec3.fromValues(0, 1, 0);
     vec3.cross(right, forward, up);
-    
-    if (globals.keyboardKeys["shift"]) {
+
+    if (globals.keyboardKeys["ShiftLeft"] || globals.keyboardKeys["ShiftRight"]) {
         globals.moveSpeed = globals.baseMoveSpeed * 3.5;
     } else {
         globals.moveSpeed = globals.baseMoveSpeed;
     }
 
+
     let moveSpeed = globals.moveSpeed;
     let movement = vec3.create();
 
-    if (globals.keyboardKeys["w"]) {
+    if (globals.keyboardKeys["KeyW"]) {
         vec3.scaleAndAdd(movement, movement, forward, moveSpeed);
     }
-    if (globals.keyboardKeys["s"]) {
+    if (globals.keyboardKeys["KeyS"]) {
         vec3.scaleAndAdd(movement, movement, forward, -moveSpeed);
     }
-    if (globals.keyboardKeys["a"]) {
+    if (globals.keyboardKeys["KeyA"]) {
         vec3.scaleAndAdd(movement, movement, right, -moveSpeed);
     }
-    if (globals.keyboardKeys["d"]) {
+    if (globals.keyboardKeys["KeyD"]) {
         vec3.scaleAndAdd(movement, movement, right, moveSpeed);
     }
     if (globals.keyboardKeys["Space"]) {
         vec3.scaleAndAdd(movement, movement, up, moveSpeed);
     }
 
-    
+
 
     vec3.add(globals.cameraPosition, globals.cameraPosition, movement);
 
