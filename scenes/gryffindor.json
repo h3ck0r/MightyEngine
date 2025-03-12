@@ -19,7 +19,6 @@
                 1
             ]
         },
-
         {
             "name": "office",
             "model": "resources/gryffindor/model.glb",
@@ -52,7 +51,22 @@
                 1,
                 1,
                 10
-            ]
+            ],
+            "moveable": true
+        },
+        {
+            "position": [
+                -0.838,
+                0.914,
+                -0.649
+            ],
+            "color": [
+                1,
+                0.7,
+                0.5,
+                20
+            ],
+            "moveable": false
         }
     ],
     "skybox": {

@@ -82,7 +82,7 @@ fn fragmentMain(input: VertexOutput) -> @location(0) vec4<f32> {
     }
 
     if ((graphicsSettings.g & 0x200u) != 0u) {
-        color += invertColor(color) * 0.00001;
+        color += invertColor(color);
     }
 
     return vec4<f32>(color, 1.0);

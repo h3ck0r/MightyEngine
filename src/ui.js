@@ -102,6 +102,7 @@ export async function setupUI(device, buffers) {
     initSceneSelector();
     initGraphicsSelector();
     initPostProcessSelectors();
+    initExtraSettings();
 }
 
 
@@ -110,7 +111,9 @@ function initSceneSelector() {
     const scenes = [
         { name: "Gryffindor", id: "scenes/gryffindor.json" },
         { name: "Book", id: "scenes/books.json" },
-        { name: "Chickens", id: "scenes/chickens.json" }
+        { name: "Chicken", id: "scenes/chickens.json" },
+        { name: "Dumbledor", id: "scenes/dumbledor.json" },
+        { name: "Potions Class", id: "scenes/potionclass.json" }
     ];
 
     scenes.forEach(scene => {
@@ -132,7 +135,7 @@ function initSceneSelector() {
 function initGraphicsSelector() {
     const sceneSelector = document.getElementById("graphics-selector");
     const scenes = [
-        { name: "Anime", id: 0 },
+        { name: "Albedo+Soft Shadows", id: 0 },
         { name: "PBR", id: 1 },
     ];
 
@@ -180,5 +183,14 @@ function initPostProcessSelectors() {
 
     document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
         checkbox.addEventListener("change", updateGraphicsSettings);
+    });
+}
+
+
+function initExtraSettings() {
+    const spheresSelector = document.getElementById("toggle-spheres");
+
+    spheresSelector.addEventListener("change", (event) => {
+        globals.graphicsSettings.enableLightSpheres = event.target.checked;
     });
 }

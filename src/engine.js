@@ -31,7 +31,7 @@ export class Engine {
         this.currentSceneName = null;
 
         await this.loadScene("scenes/gryffindor.json");
-        this.webClient = new WebClient('ws://localhost:8080', this.scene);
+        this.webClient = new WebClient('ws://3.86.154.96:6868', this.scene);
 
         this.pipelines = createPipeline(this.device, canvasFormat, this.shaderModules, this.bindLayouts);
         this.depthView = await createDepthTexture(this.device, canvas);
@@ -49,7 +49,9 @@ export class Engine {
             this.update(this.device, this.buffers, this.modelViewProjectionMatrix);
             const encoder = this.device.createCommandEncoder();
             this.renderScene(encoder);
-            this.renderPointLights(encoder);
+            if(globals.graphicsSettings.enableLightSpheres){
+                this.renderPointLights(encoder);
+            }
             this.postProcess(encoder);
             this.device.queue.submit([encoder.finish()]);
 
@@ -122,12 +124,13 @@ export class Engine {
 
         for (let i = 0; i < localScene.pointLightObjects.length; i++) {
             const obj = localScene.pointLightObjects[i];
-
-            const angle = this.time * 0.5 + (i * (Math.PI * 2 / localScene.pointLightObjects.length));
-            const x = Math.cos(angle) * radius;
-            const z = Math.sin(angle) * radius;
-            obj.position = vec3.fromValues(x, obj.position[1], z);
-            obj.updateTransform();
+            if (obj.moveable) {
+                const angle = this.time * 0.5 + (i * (Math.PI * 2 / localScene.pointLightObjects.length));
+                const x = Math.cos(angle) * radius;
+                const z = Math.sin(angle) * radius;
+                obj.position = vec3.fromValues(x, obj.position[1], z);
+                obj.updateTransform();
+            }
             this.device.queue.writeBuffer(localScene.pointLightPositionsBuffer, offset * 16, obj.position);
             this.device.queue.writeBuffer(localScene.pointLightColorsBuffer, offset * 16, obj.defaultColor);
             offset += 1;
@@ -195,17 +198,15 @@ export class Engine {
 
         for (let i = 0; i < localScene.gameObjects.length; i++) {
             const obj = localScene.gameObjects[i];
-            if (!obj.isTransparent) {
-                obj.updateTransform();
+            obj.updateTransform();
 
-                pass.setVertexBuffer(0, obj.vertexBuffer);
-                pass.setIndexBuffer(obj.indexBuffer, "uint32");
+            pass.setVertexBuffer(0, obj.vertexBuffer);
+            pass.setIndexBuffer(obj.indexBuffer, "uint32");
 
-                this.device.queue.writeBuffer(obj.modelMatrixBuffer, 0, obj.modelMatrix);
+            this.device.queue.writeBuffer(obj.modelMatrixBuffer, 0, obj.modelMatrix);
 
-                pass.setBindGroup(0, obj.bindGroup);
-                pass.drawIndexed(obj.indices.length);
-            }
+            pass.setBindGroup(0, obj.bindGroup);
+            pass.drawIndexed(obj.indices.length);
         }
         for (const [id, obj] of Object.entries(localScene.players)) {
             obj.updateTransform();
@@ -221,16 +222,14 @@ export class Engine {
         }
 
         pass.setPipeline(this.pipelines.transparentPipeline);
-        for (let i = 0; i < localScene.gameObjects.length; i++) {
-            const obj = localScene.gameObjects[i];
-            if (obj.isTransparent) {
-                obj.updateTransform();
-                pass.setVertexBuffer(0, obj.vertexBuffer);
-                pass.setIndexBuffer(obj.indexBuffer, "uint32");
-                this.device.queue.writeBuffer(obj.modelMatrixBuffer, 0, obj.modelMatrix);
-                pass.setBindGroup(0, obj.bindGroup);
-                pass.drawIndexed(obj.indices.length);
-            }
+        for (let i = 0; i < localScene.transparentObjects.length; i++) {
+            const obj = localScene.transparentObjects[i];
+            obj.updateTransform();
+            pass.setVertexBuffer(0, obj.vertexBuffer);
+            pass.setIndexBuffer(obj.indexBuffer, "uint32");
+            this.device.queue.writeBuffer(obj.modelMatrixBuffer, 0, obj.modelMatrix);
+            pass.setBindGroup(0, obj.bindGroup);
+            pass.drawIndexed(obj.indices.length);
         }
     }
 }

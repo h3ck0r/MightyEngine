@@ -9,6 +9,7 @@ export class Scene {
         this.buffers = buffers;
         this.gameObjects = [];
         this.players = {};
+        this.transparentObjects = [];
         this.pointLightObjects = [];
         this.pointLightPositionsBuffer = null;
         this.pointLightColorsBuffer = null;
@@ -31,9 +32,9 @@ export class Scene {
     removePlayer(playerId) {
         const playerObj = this.players[playerId];
         if (playerObj) {
-            playerObj.modelMatrixBuffer?.destroy();
-            playerObj.vertexBuffer?.destroy();
-            playerObj.indexBuffer?.destroy();
+            // playerObj.modelMatrixBuffer?.destroy();
+            // playerObj.vertexBuffer?.destroy();
+            // playerObj.indexBuffer?.destroy();
 
             delete this.players[playerId];
         }
@@ -50,7 +51,12 @@ export class Scene {
             objectData.name = parentObj.name;
             for (const model of parentObj.models) {
                 const obj = this.loadObject(model, objectData);
-                this.gameObjects.push(obj);
+                if(obj.isTransparent){
+                    this.transparentObjects.push(obj);
+                }
+                else{
+                    this.gameObjects.push(obj);
+                }
             }
 
         }
@@ -88,7 +94,8 @@ export class Scene {
                 obj.vertexBuffer = model.vertexBuffer;
                 obj.indexBuffer = model.indexBuffer;
                 obj.indices = model.indices;
-
+                obj.moveable = lightData.moveable;
+                obj.defaultColor = new Float32Array(lightData.color);
                 obj.modelMatrixBuffer = this.device.createBuffer({
                     label: "Model Matrix Buffer",
                     size: 4 * 16,

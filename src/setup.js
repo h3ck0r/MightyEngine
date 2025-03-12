@@ -4,6 +4,9 @@ export const globals = {
     lightDirection: new Float32Array([10, 10, 0, 1]),
     bloomStr: new Float32Array([0.1, 0, 0]),
     cameraPosition: new Float32Array([0, 1, 1]),
+    graphicsSettings: {
+        enableLightSpheres: false
+    },
     cameraRotation: [0, 0],
     keyboardKeys: {},
     mouseDelta: { x: 0, y: 0 },

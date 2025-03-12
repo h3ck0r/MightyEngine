@@ -1,4 +1,4 @@
-const NUM_POINT_LIGHTS: u32 = 1;
+const NUM_POINT_LIGHTS: u32 = 2;
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,

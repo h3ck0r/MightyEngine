@@ -1,16 +1,16 @@
 {
     "objects": [
         {
-            "name": "chicken",
-            "model": "resources/chicken/model.glb",
+            "name": "office",
+            "model": "resources/potionclass/model.glb",
             "position": [
                 0,
                 0,
-                0
+                2
             ],
             "rotation": [
                 0,
-                6,
+                0,
                 0
             ],
             "scale": [
@@ -32,8 +32,7 @@
                 1,
                 1,
                 10
-            ],
-            "moveable": true
+            ]
         },
         {
             "position": [
@@ -51,6 +50,6 @@
         }
     ],
     "skybox": {
-        "texture": "resources/spacecubemap"
+        "texture": "resources/animeskycubemap"
     }
 }
