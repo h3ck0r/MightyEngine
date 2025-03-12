@@ -19,33 +19,42 @@ jobs:
         with:
           lfs: true  # This ensures that Git LFS files are pulled during checkout
 
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Step 2: Remove node_modules and package-lock.json to fix potential dependency issues
       - name: Remove node_modules and package-lock.json
         run: |
           rm -rf node_modules
           rm -f package-lock.json
 
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Step 3: Set up Node.js (version 18)
       - name: Set up Node.js (version 18)
         uses: actions/setup-node@v3
         with:
           node-version: '18'  # Specify Node.js version 18
 
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Step 4: Install dependencies
       - name: Install dependencies
         run: npm install  # Install dependencies from package.json
 
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Step 5: Build the project using Vite
       - name: Build the project with Vite
         run: npx vite build  # Build the project using Vite (production build)
 
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Step 6: Deploy to GitHub Pages using peaceiris/actions-gh-pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub
-          publish_dir: ./dist  # Directory where Vite's build files are located
-
+        
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # Step 7: Clean up if necessary (optional, to remove any temporary files or directories)
       - name: Clean up temporary files
         run: rm -rf path_to_cleanup  # Specify the path to clean up if needed (e.g., models directory)
