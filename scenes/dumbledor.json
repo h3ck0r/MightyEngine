@@ -2,7 +2,7 @@
     "objects": [
         {
             "name": "dumbledor",
-            "model": "resources/dumbledor/model.glb",
+            "model": "./resources/dumbledor/model.glb",
             "position": [
                 0,
                 0,
@@ -50,6 +50,6 @@
         }
     ],
     "skybox": {
-        "texture": "resources/spacecubemap"
+        "texture": "./resources/spacecubemap"
     }
 }

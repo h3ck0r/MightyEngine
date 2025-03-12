@@ -3,7 +3,7 @@
        
         {
             "name": "office",
-            "model": "resources/gryffindor/model.glb",
+            "model": "./resources/gryffindor/model.glb",
             "position": [
                 0,
                 0,
@@ -52,6 +52,6 @@
         }
     ],
     "skybox": {
-        "texture": "resources/animeskycubemap"
+        "texture": "./resources/animeskycubemap"
     }
 }
