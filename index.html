@@ -11,11 +11,13 @@
 
 <body>
     <div id="main-menu">
-        <div>Welcome to Mighty Engine!</div>
-        <button id="toggle-debug-menu">Toggle debug menu</button>
-        <button id="exit-button">Exit menu</button>
+        <div>Welcome to Mighty Engine 👻</div>
+        <div>(Please note that this is a very early version and bugs are possible)</div>
+        <button id="exit-button">Ok</button>
     </div>
+    <button id="show-menu-btn" style="display: none;">☰</button>
     <div id="right-menu">
+        <button id="close-menu-btn">✖</button>
         <div>
             <div>
                 <span id="fps-counter" class="no-events">FPS: 0 | Frame Time: 0ms</span>
@@ -80,7 +82,7 @@
                 <div>
                     <input type="range" min="0" max="1" step="0.01" value="0.1" id="bloom-str"
                         oninput="updateValue('bloom-str', this.value)" />
-                    <span class="no-events" id="bloom-str-value">1</span>
+                    <span class="no-events" id="bloom-str-value">0.1</span>
                 </div>
             </div>
             <div>
@@ -116,6 +118,15 @@
             function updateValue(inputId, value) {
                 document.getElementById(inputId + '-value').textContent = value;
             }
+            document.getElementById("close-menu-btn").addEventListener("click", function () {
+                document.getElementById("right-menu").style.display = "none";
+                document.getElementById("show-menu-btn").style.display = "block";
+            });
+
+            document.getElementById("show-menu-btn").addEventListener("click", function () {
+                document.getElementById("right-menu").style.display = "block";
+                document.getElementById("show-menu-btn").style.display = "none";
+            });
         </script>
 
     </div>

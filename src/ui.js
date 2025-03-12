@@ -85,18 +85,18 @@ export async function setupUI(device, buffers) {
         document.body.requestPointerLock();
     });
 
-    const toggleDebugMenu = document.getElementById("toggle-debug-menu");
-    let debugMenuToggled = true;
-    toggleDebugMenu.addEventListener("click", () => {
-        if (debugMenuToggled) {
-            document.getElementById("right-menu").style.display = "none";
-            debugMenuToggled = false;
-        }
-        else {
-            document.getElementById("right-menu").style.display = "block";
-            debugMenuToggled = true;
-        }
-    })
+    // const toggleDebugMenu = document.getElementById("toggle-debug-menu");
+    // let debugMenuToggled = true;
+    // toggleDebugMenu.addEventListener("click", () => {
+    //     if (debugMenuToggled) {
+    //         document.getElementById("right-menu").style.display = "none";
+    //         debugMenuToggled = false;
+    //     }
+    //     else {
+    //         document.getElementById("right-menu").style.display = "block";
+    //         debugMenuToggled = true;
+    //     }
+    // })
     initSceneSelector();
     initGraphicsSelector();
     initPostProcessSelectors();
