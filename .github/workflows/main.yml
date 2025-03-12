@@ -1,48 +1,64 @@
 name: Deploy to GitHub Pages with Vite and Git LFS
 
-# Trigger the workflow on push or pull request events for the "main" branch
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch:  # Allows you to manually trigger the workflow from the Actions tab
+  workflow_dispatch:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest  # Runs the job on the latest Ubuntu runner
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # Grant write permission to contents (push commits)
+      pages: write     # Grant write permission to pages (for deploying GitHub Pages)
 
     steps:
       # Step 1: Checkout the repository, including Git LFS files
       - name: Checkout repository with Git LFS
         uses: actions/checkout@v3
         with:
-          lfs: true  # This ensures that Git LFS files are pulled during checkout
+          lfs: true
+
       # Step 2: Remove node_modules and package-lock.json to fix potential dependency issues
       - name: Remove node_modules and package-lock.json
         run: |
           rm -rf node_modules
           rm -f package-lock.json
+
       # Step 3: Set up Node.js (version 18)
       - name: Set up Node.js (version 18)
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Specify Node.js version 18
+          node-version: '18'
+
       # Step 4: Install dependencies
       - name: Install dependencies
-        run: npm install  # Install dependencies from package.json
+        run: npm install
+
       # Step 5: Build the project using Vite
       - name: Build the project with Vite
-        run: npx vite build  # Build the project using Vite (production build)
-      # Step 6: Deploy to GitHub Pages using peaceiris/actions-gh-pages
+        run: npx vite build
+
+      # Step 6: Set up Git for deployment (ensure remote URL and configuration)
+      - name: Set up Git for deployment
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://github.com/${{ github.repository }}.git
+
+      # Step 7: Deploy to GitHub Pages using peaceiris/actions-gh-pages
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist  # Directory where Vite's build files are located
-          publish_branch: gh-pages  # Specify the branch to deploy to
-          allow_empty_commit: true  # If no changes, allow empty commits
-          force_orphan: true 
-      # Step 7: Clean up if necessary (optional, to remove any temporary files or directories)
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          allow_empty_commit: true
+          force_orphan: true
+
+      # Step 8: Clean up if necessary (optional)
       - name: Clean up temporary files
-        run: rm -rf path_to_cleanup  # Specify the path to clean up if needed (e.g., models directory)
+        run: rm -rf path_to_cleanup
