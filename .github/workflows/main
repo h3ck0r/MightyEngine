@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages with Vite and Git LFS
+
+# Trigger the workflow on push or pull request events for the "main" branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:  # Allows you to manually trigger the workflow from the Actions tab
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # Runs the job on the latest Ubuntu runner
+
+    steps:
+      # Step 1: Checkout the repository, including Git LFS files
+      - name: Checkout repository with Git LFS
+        uses: actions/checkout@v3
+        with:
+          lfs: true  # This ensures that Git LFS files are pulled during checkout
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # Specify your desired Node.js version
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install  # Install dependencies from package.json
+
+      # Step 4: Build the project using Vite
+      - name: Build the project with Vite
+        run: npx vite build  # Build the project using Vite (production build)
+
+      # Step 5: Deploy to GitHub Pages using Vite deploy
+      - name: Deploy to GitHub Pages
+        run: npx vite deploy  # This assumes you have a vite config with GitHub Pages as the deploy target
+
+      # Step 6: Clean up if necessary (optional, to remove any temporary files or directories)
+      - name: Clean up temporary files
+        run: rm -rf path_to_cleanup  # Specify the path to clean up if needed (e.g., models directory)
+
