@@ -30,7 +30,7 @@ export class Engine {
         this.scenesCache = {};
         this.currentSceneName = null;
 
-        await this.loadScene("./scenes/gryffindor.json");
+        await this.loadScene("./public/scenes/gryffindor.json");
         this.webClient = new WebClient('ws://3.86.154.96:6868', this.scene);
 
         this.pipelines = createPipeline(this.device, canvasFormat, this.shaderModules, this.bindLayouts);
@@ -73,7 +73,7 @@ export class Engine {
             const playerModel = new GameObject(this.device);
             this.scene = new Scene(this.device, this.bindLayouts, this.buffers);
             await this.scene.loadScene(sceneName);
-            await playerModel.addModel("./resources/chicken/model.glb");
+            await playerModel.addModel("./public/resources/chicken/model.glb");
             this.scene.playerModel = playerModel;
             this.scenesCache[sceneName] = this.scene;
         }

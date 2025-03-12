@@ -8,8 +8,8 @@ body {
 }
 
 body {
-    background: #121212; 
-    cursor: url("pictures/cursor.png"), auto !important;
+    background: #121212;
+    cursor: url("./public/pictures/cursor.png"), auto !important;
 }
 
 a,
@@ -18,7 +18,7 @@ input,
 select,
 label,
 textarea {
-    cursor: url("pictures/cursor-glowed.png"), auto !important;
+    cursor: url("./public/pictures/cursor-glowed.png"), auto !important;
 }
 
 canvas {
@@ -47,6 +47,7 @@ canvas {
     display: block;
     z-index: 9999;
 }
+
 #close-menu-btn {
     position: absolute;
     top: 10px;
@@ -57,9 +58,11 @@ canvas {
     font-size: 20px;
     cursor: pointer;
 }
+
 #close-menu-btn:hover {
     color: red;
 }
+
 #main-menu {
     position: absolute;
     top: 50%;
@@ -94,6 +97,7 @@ canvas {
     background: rgb(66, 53, 255);
     color: white;
 }
+
 #show-menu-btn {
     position: fixed;
     top: 10px;
