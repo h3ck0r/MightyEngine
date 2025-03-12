@@ -6,8 +6,10 @@ let fps = 0;
 
 const fpsCounter = document.getElementById("fps-counter");
 const playerCoords = document.getElementById("player-coords");
+const playerRotation = document.getElementById("player-rotation");
 
-export function updateFPS() {
+
+export function updateUI() {
     const now = performance.now();
     frameCount++;
 
@@ -19,13 +21,13 @@ export function updateFPS() {
 
     const frameTime = (1000 / (fps || 1)).toFixed(2);
     fpsCounter.textContent = `FPS: ${fps} | Frame Time: ${frameTime}ms`;
-}
-export function updatePlayerPos() {
     playerCoords.textContent = `x: ${globals.cameraPosition[0].toFixed(3)} 
                                 y: ${globals.cameraPosition[1].toFixed(3)} 
                                 z: ${globals.cameraPosition[2].toFixed(3)}`;
-}
 
+    playerRotation.textContent = `rx: ${globals.cameraRotation[0].toFixed(3)} 
+                                ry: ${globals.cameraRotation[1].toFixed(3)} `;
+}
 
 export async function setupUI(device, buffers) {
     window.addEventListener("keydown", (e) => {
@@ -155,7 +157,7 @@ function initPostProcessSelectors() {
         "toggle-exposure": 0x04,
         "toggle-stylized-shadows": 0x08,
         "toggle-scanlines": 0x10,
-        "toggle-chromatic-aberration": 0x20,  
+        "toggle-chromatic-aberration": 0x20,
         "toggle-random-noise": 0x40,
         "toggle-posterize": 0x80,
         "toggle-vignette": 0x100,

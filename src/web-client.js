@@ -33,8 +33,11 @@ export class WebClient {
                     return;
                 }
                 this.scene.players[data.id].position[0] = data.position.x;
-                this.scene.players[data.id].position[1] = data.position.y;
+                this.scene.players[data.id].position[1] = data.position.y-0.65;
                 this.scene.players[data.id].position[2] = data.position.z;
+
+                this.scene.players[data.id].rotation[0] = -data.position.rx;
+                this.scene.players[data.id].rotation[1] = data.position.ry;
 
             }
             else if (data.type === "remove") {
@@ -42,12 +45,13 @@ export class WebClient {
             }
         };
     }
-    sendPlayerPosition(position) {
+    sendPlayerPosition(position, rotation) {
         if (this.socket.readyState === WebSocket.OPEN) {
             this.socket.send(JSON.stringify({
                 type: "move",
                 id: this.playerId,
-                position: { x: position[0], y: position[1], z: position[2] }
+                position: { x: position[0], y: position[1], z: position[2], rx: rotation[0], ry: rotation[1] },
+
             }));
         } else {
             console.warn("WebSocket not open. Skipping position update.");

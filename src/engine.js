@@ -1,5 +1,5 @@
 import { vec3, mat4 } from "gl-matrix";
-import { updateFPS, updatePlayerPos } from "./ui.js";
+import { updateUI } from "./ui.js";
 import { setup, loadShaders, setupBuffers, createPostProcessResources, createRenderTextureViews, createDepthTexture } from "./setup.js";
 import { Scene } from "./scene.js"
 import { setupUI } from "./ui.js"
@@ -108,8 +108,7 @@ export class Engine {
     update() {
         this.time = performance.now() * 0.001;
 
-        updateFPS();
-        updatePlayerPos();
+        updateUI();
         updateCamera(this.modelViewProjectionMatrix, this.webClient);
 
         this.updatePointLights();
