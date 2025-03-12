@@ -25,11 +25,11 @@ jobs:
           rm -rf node_modules
           rm -f package-lock.json
 
-      # Step 3: Set up Node.js
-      - name: Set up Node.js
+      # Step 3: Set up Node.js (version 18)
+      - name: Set up Node.js (version 18)
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Specify your desired Node.js version
+          node-version: '18'  # Specify Node.js version 18
 
       # Step 4: Install dependencies
       - name: Install dependencies
@@ -46,3 +46,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub
           publish_dir: ./dist  # Directory where Vite's build files are located
 
+      # Step 7: Clean up if necessary (optional, to remove any temporary files or directories)
+      - name: Clean up temporary files
+        run: rm -rf path_to_cleanup  # Specify the path to clean up if needed (e.g., models directory)
