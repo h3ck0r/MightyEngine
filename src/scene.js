@@ -1,4 +1,4 @@
-import { vec3 } from "gl-matrix";
+import { vec3 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
 import { GameObject } from "./game-object.js";
 import { loadCubemapTexture, createBindGroupForGameObject } from "./utils.js"
 
@@ -51,10 +51,10 @@ export class Scene {
             objectData.name = parentObj.name;
             for (const model of parentObj.models) {
                 const obj = this.loadObject(model, objectData);
-                if(obj.isTransparent){
+                if (obj.isTransparent) {
                     this.transparentObjects.push(obj);
                 }
-                else{
+                else {
                     this.gameObjects.push(obj);
                 }
             }

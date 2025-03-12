@@ -1,4 +1,4 @@
-import { vec3, mat4 } from "gl-matrix";
+import { vec3, mat4 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
 import { updateUI } from "./ui.js";
 import { setup, loadShaders, setupBuffers, createPostProcessResources, createRenderTextureViews, createDepthTexture } from "./setup.js";
 import { Scene } from "./scene.js"
@@ -49,7 +49,7 @@ export class Engine {
             this.update(this.device, this.buffers, this.modelViewProjectionMatrix);
             const encoder = this.device.createCommandEncoder();
             this.renderScene(encoder);
-            if(globals.graphicsSettings.enableLightSpheres){
+            if (globals.graphicsSettings.enableLightSpheres) {
                 this.renderPointLights(encoder);
             }
             this.postProcess(encoder);

@@ -1,7 +1,6 @@
 import { loadGLTFModel } from "./utils.js"
 import { mat4, vec3 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
 
-
 export class GameObject {
     constructor(device) {
         this.rotation = vec3.fromValues(0, 0, 0);
@@ -53,7 +52,7 @@ export class GameObject {
 
             const materialAttributesBuffer = this.device.createBuffer({
                 label: "Material Attributes Buffer",
-                size: 4*4, // currently 4 floats for aligning
+                size: 4 * 4, // currently 4 floats for aligning
                 usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
             });
             this.device.queue.writeBuffer(materialAttributesBuffer, 0, new Float32Array([material.opacity]));
