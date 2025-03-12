@@ -1,24 +1,6 @@
 {
     "objects": [
-        {
-            "name": "girl",
-            "model": "resources/girl/model.glb",
-            "position": [
-                0,
-                0,
-                5
-            ],
-            "rotation": [
-                0,
-                6,
-                0
-            ],
-            "scale": [
-                1,
-                1,
-                1
-            ]
-        },
+       
         {
             "name": "office",
             "model": "resources/gryffindor/model.glb",

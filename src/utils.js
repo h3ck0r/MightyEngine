@@ -1,4 +1,5 @@
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 export async function loadGLTFModel(url) {
     return new Promise((resolve, reject) => {
