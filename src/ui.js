@@ -1,4 +1,4 @@
-import { globals } from "./setup";
+import { globals } from "./setup.js";
 
 let lastFrameTime = performance.now();
 let frameCount = 0;
