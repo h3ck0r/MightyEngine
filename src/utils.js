@@ -86,7 +86,7 @@ export async function loadShader(url) {
 export function createRenderPass(encoder, textureView, depthView = null, clearColor = true, clearDepth = true) {
     let colorAttachments = [{
         view: textureView,
-        loadOp: clearColor ? "clear" : "load", 
+        loadOp: clearColor ? "clear" : "load",
         clearValue: { r: 0.15, g: 0.15, b: 0.2, a: 1 },
         storeOp: "store"
     }];
@@ -131,4 +131,30 @@ export async function loadCubemapTexture(device, imageUrls) {
     }
 
     return texture;
+}
+
+export function createBindGroupForGameObject(device, bindLayouts, buffers, modelMatrixBuffer, pointLightPositionsBuffer, pointLightColorsBuffer, model) {
+    return device.createBindGroup({
+        layout: bindLayouts.mainBindGroupLayout,
+        entries: [
+            { binding: 0, resource: { buffer: buffers.mvpBuffer } },
+            { binding: 1, resource: { buffer: modelMatrixBuffer } },
+            { binding: 2, resource: { buffer: buffers.cameraPositionBuffer } },
+            { binding: 3, resource: { buffer: buffers.globalLightDirectionBuffer } },
+            { binding: 4, resource: { buffer: pointLightPositionsBuffer } },
+            { binding: 5, resource: { buffer: pointLightColorsBuffer } },
+            { binding: 6, resource: model.albedoTexture.createView() },
+            { binding: 7, resource: model.albedoSampler },
+            { binding: 8, resource: model.normalTexture.createView() },
+            { binding: 9, resource: model.normalSampler },
+            { binding: 10, resource: model.roughnessTexture.createView() },
+            { binding: 11, resource: model.roughnessSampler },
+            { binding: 12, resource: model.metalnessTexture.createView() },
+            { binding: 13, resource: model.metalnessSampler },
+            { binding: 14, resource: model.specularColorTexture.createView() },
+            { binding: 15, resource: model.specularColorSampler },
+            { binding: 16, resource: { buffer: model.materialAttributesBuffer } },
+            { binding: 17, resource: { buffer: buffers.graphicsSettingsBuffer } }
+        ]
+    });
 }

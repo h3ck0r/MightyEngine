@@ -5,14 +5,14 @@
 fn bloomMain(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {
     let color = textureSample(inputTexture, inputSampler, uv);
     let luminance = dot(color.rgb, vec3<f32>(0.299, 0.587, 0.114));
-    let threshold: f32 = 0.8;
+    let threshold: f32 = 0.5;
     let bloomColor = color.rgb * step(threshold, luminance);
     return vec4<f32>(bloomColor, color.a);
 }
 
-const KERNEL_SIZE: i32 = 5;
+const KERNEL_SIZE: i32 = 10;
 const KERNEL: array<f32, 5> = array<f32, 5>(0.227, 0.194, 0.121, 0.054, 0.016);
-const OFFSET_SCALE: f32 =1;
+const OFFSET_SCALE: f32 =5;
 
 @fragment
 fn blurVMain(@location(0) uv: vec2<f32>) -> @location(0) vec4<f32> {

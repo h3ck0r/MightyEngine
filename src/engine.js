@@ -1,5 +1,5 @@
 import { vec3, mat4 } from "gl-matrix";
-import { updateFPS } from "./ui.js";
+import { updateFPS, updatePlayerPos } from "./ui.js";
 import { setup, loadShaders, setupBuffers, createPostProcessResources, createRenderTextureViews, createDepthTexture } from "./setup.js";
 import { Scene } from "./scene.js"
 import { setupUI } from "./ui.js"
@@ -8,6 +8,8 @@ import { createBindLayouts } from "./bind-layouts.js";
 import { updateCamera } from "./movement.js"
 import { globals } from "./setup.js";
 import { createRenderPass } from "./utils.js"
+import { WebClient } from "./web-client.js"
+import { GameObject } from "./game-object.js";
 
 export class Engine {
     async init() {
@@ -17,7 +19,7 @@ export class Engine {
         this.context = context;
         this.canvasFormat = canvasFormat;
         this.canvas = canvas;
-        this.graphicsSettings = new Uint32Array([0,0,0,0]);
+        this.graphicsSettings = new Uint32Array([0, 0, 0, 0]);
 
         this.renderTextureViews = createRenderTextureViews(this.device, this.canvas, this.canvasFormat);
         this.shaderModules = await loadShaders(this.device);
@@ -27,7 +29,9 @@ export class Engine {
 
         this.scenesCache = {};
         this.currentSceneName = null;
+
         await this.loadScene("scenes/gryffindor.json");
+        this.webClient = new WebClient('ws://localhost:8080', this.scene);
 
         this.pipelines = createPipeline(this.device, canvasFormat, this.shaderModules, this.bindLayouts);
         this.depthView = await createDepthTexture(this.device, canvas);
@@ -41,6 +45,7 @@ export class Engine {
                 requestAnimationFrame(renderLoop);
                 return;
             }
+
             this.update(this.device, this.buffers, this.modelViewProjectionMatrix);
             const encoder = this.device.createCommandEncoder();
             this.renderScene(encoder);
@@ -54,7 +59,7 @@ export class Engine {
     }
     async loadScene(sceneName) {
         if (this.currentSceneName === sceneName) {
-            return; 
+            return;
         }
 
         this.running = false;
@@ -62,9 +67,13 @@ export class Engine {
         if (this.scenesCache[sceneName]) {
             this.scene = this.scenesCache[sceneName];
         } else {
+
+            const playerModel = new GameObject(this.device);
             this.scene = new Scene(this.device, this.bindLayouts, this.buffers);
             await this.scene.loadScene(sceneName);
-            this.scenesCache[sceneName] = this.scene; 
+            await playerModel.addModel("resources/chicken/model.glb");
+            this.scene.playerModel = playerModel;
+            this.scenesCache[sceneName] = this.scene;
         }
 
         this.currentSceneName = sceneName;
@@ -100,7 +109,9 @@ export class Engine {
         this.time = performance.now() * 0.001;
 
         updateFPS();
-        updateCamera(this.modelViewProjectionMatrix);
+        updatePlayerPos();
+        updateCamera(this.modelViewProjectionMatrix, this.webClient);
+
         this.updatePointLights();
         this.device.queue.writeBuffer(this.buffers.mvpBuffer, 0, this.modelViewProjectionMatrix);
         this.device.queue.writeBuffer(this.buffers.cameraPositionBuffer, 0, globals.cameraPosition);
@@ -197,6 +208,18 @@ export class Engine {
                 pass.drawIndexed(obj.indices.length);
             }
         }
+        for (const [id, obj] of Object.entries(localScene.players)) {
+            obj.updateTransform();
+
+
+            pass.setVertexBuffer(0, obj.vertexBuffer);
+            pass.setIndexBuffer(obj.indexBuffer, "uint32");
+
+            this.device.queue.writeBuffer(obj.modelMatrixBuffer, 0, obj.modelMatrix);
+
+            pass.setBindGroup(0, obj.bindGroup);
+            pass.drawIndexed(obj.indices.length);
+        }
 
         pass.setPipeline(this.pipelines.transparentPipeline);
         for (let i = 0; i < localScene.gameObjects.length; i++) {
@@ -212,22 +235,3 @@ export class Engine {
         }
     }
 }
-
-// if (!obj.velocity) {
-//     obj.velocity = vec3.fromValues(
-//         (Math.random() - 0.5) * 0.01,
-//         (Math.random() - 0.5) * 0.01,
-//         (Math.random() - 0.5) * 0.01
-//     );
-// }
-
-// if (!obj.rotationVelocity) {
-//     obj.rotationVelocity = vec3.fromValues(
-//         (Math.random() - 0.5) * 0.01,
-//         (Math.random() - 0.5) * 0.01,
-//         (Math.random() - 0.5) * 0.01,
-//     );
-// }
-
-// vec3.add(obj.rotation, obj.rotation, obj.rotationVelocity);
-// vec3.add(obj.position, obj.position, obj.velocity);

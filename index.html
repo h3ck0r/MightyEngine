@@ -17,8 +17,11 @@
     </div>
     <div id="right-menu">
         <div>
-            <div id="fps-counter">
-                <span class="no-events">FPS: 0 | Frame Time: 0ms</span>
+            <div>
+                <span id="fps-counter" class="no-events">FPS: 0 | Frame Time: 0ms</span>
+            </div>
+            <div>
+                <span id="player-coords" class="no-events">x: 0 y: 0 z: 0</span>
             </div>
             <hr>
             <div>
@@ -75,7 +78,7 @@
             <div id="input-bloom-str" style="display: flex; gap: 10px; align-items: center;">
                 <span class="no-events">Bloom Str:</span>
                 <div>
-                    <input type="range" min="0" max="1" step="0.01" value="1" id="bloom-str"
+                    <input type="range" min="0" max="1" step="0.01" value="0.1" id="bloom-str"
                         oninput="updateValue('bloom-str', this.value)" />
                     <span class="no-events" id="bloom-str-value">1</span>
                 </div>

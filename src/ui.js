@@ -4,7 +4,9 @@ let lastFrameTime = performance.now();
 let frameCount = 0;
 let fps = 0;
 
-const fpsCounter = document.getElementsByClassName("no-events")[0];
+const fpsCounter = document.getElementById("fps-counter");
+const playerCoords = document.getElementById("player-coords");
+
 export function updateFPS() {
     const now = performance.now();
     frameCount++;
@@ -18,6 +20,12 @@ export function updateFPS() {
     const frameTime = (1000 / (fps || 1)).toFixed(2);
     fpsCounter.textContent = `FPS: ${fps} | Frame Time: ${frameTime}ms`;
 }
+export function updatePlayerPos() {
+    playerCoords.textContent = `x: ${globals.cameraPosition[0].toFixed(3)} 
+                                y: ${globals.cameraPosition[1].toFixed(3)} 
+                                z: ${globals.cameraPosition[2].toFixed(3)}`;
+}
+
 
 export async function setupUI(device, buffers) {
     window.addEventListener("keydown", (e) => {

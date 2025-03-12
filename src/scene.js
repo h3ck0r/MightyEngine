@@ -1,6 +1,6 @@
 import { vec3 } from "gl-matrix";
 import { GameObject } from "./game-object.js";
-import { loadCubemapTexture } from "./utils.js"
+import { loadCubemapTexture, createBindGroupForGameObject } from "./utils.js"
 
 export class Scene {
     constructor(device, bindLayouts, buffers) {
@@ -8,14 +8,26 @@ export class Scene {
         this.bindLayouts = bindLayouts;
         this.buffers = buffers;
         this.gameObjects = [];
+        this.players = {};
         this.pointLightObjects = [];
         this.pointLightPositionsBuffer = null;
         this.pointLightColorsBuffer = null;
         this.skyboxBuffer = null;
         this.skyboxIndexBuffer = null;
         this.skyboxBindGroup = null;
+        this.playerModel = null;
     }
 
+    async loadPlayerModel(modelPath) {
+        const playerModel = new GameObject(this.device);
+        await playerModel.addModel(modelPath);
+        this.playerModel = playerModel;
+    }
+    addPlayer(player, playerId) {
+        const objectData = { position: [player.x, player.y, player.z], rotation: [0, 0, 0], scale: [0.2, 0.2, 0.2] };
+        let playerObj = this.loadObject(this.playerModel.models[0], objectData);
+        this.players[playerId] = playerObj;
+    }
     async loadObjects() {
         for (const objectData of this.sceneConfig.objects) {
             const parentObj = new GameObject(this.device);
@@ -24,56 +36,36 @@ export class Scene {
                 console.warn(`No models loaded for ${objectData.path}`);
                 continue;
             }
-
+            objectData.name = parentObj.name;
             for (const model of parentObj.models) {
-                const obj = new GameObject(this.device);
-                obj.position = vec3.fromValues(...objectData.position);
-                obj.rotation = vec3.fromValues(...objectData.rotation);
-                obj.scale = vec3.fromValues(...objectData.scale);
-
-                obj.name = model.name;
-                obj.vertexBuffer = model.vertexBuffer;
-                obj.indexBuffer = model.indexBuffer;
-                obj.indices = model.indices;
-                obj.isTransparent = model.isTransparent;
-
-                obj.modelMatrixBuffer = this.device.createBuffer({
-                    label: "Model Matrix Buffer",
-                    size: 4 * 16,
-                    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-                });
-
-
-                obj.bindGroup = this.device.createBindGroup({
-                    layout: this.bindLayouts.mainBindGroupLayout,
-                    entries: [
-                        { binding: 0, resource: { buffer: this.buffers.mvpBuffer } },
-                        { binding: 1, resource: { buffer: obj.modelMatrixBuffer } },
-                        { binding: 2, resource: { buffer: this.buffers.cameraPositionBuffer } },
-                        { binding: 3, resource: { buffer: this.buffers.globalLightDirectionBuffer } },
-                        { binding: 4, resource: { buffer: this.pointLightPositionsBuffer } },
-                        { binding: 5, resource: { buffer: this.pointLightColorsBuffer } },
-                        { binding: 6, resource: model.albedoTexture.createView() },
-                        { binding: 7, resource: model.albedoSampler },
-                        { binding: 8, resource: model.normalTexture.createView() },
-                        { binding: 9, resource: model.normalSampler },
-                        { binding: 10, resource: model.roughnessTexture.createView() },
-                        { binding: 11, resource: model.roughnessSampler },
-                        { binding: 12, resource: model.metalnessTexture.createView() },
-                        { binding: 13, resource: model.metalnessSampler },
-                        { binding: 14, resource: model.specularColorTexture.createView() },
-                        { binding: 15, resource: model.specularColorSampler },
-                        { binding: 16, resource: { buffer: model.materialAttributesBuffer } },
-                        { binding: 17, resource: { buffer: this.buffers.graphicsSettingsBuffer } }
-                    ]
-                });
-
+                const obj = this.loadObject(model, objectData);
                 this.gameObjects.push(obj);
             }
 
         }
     }
+    loadObject(model, objectData) {
+        const obj = new GameObject(this.device);
+        obj.position = vec3.fromValues(...objectData.position);
+        obj.rotation = vec3.fromValues(...objectData.rotation);
+        obj.scale = vec3.fromValues(...objectData.scale);
 
+        obj.name = objectData.name;
+        obj.vertexBuffer = model.vertexBuffer;
+        obj.indexBuffer = model.indexBuffer;
+        obj.indices = model.indices;
+        obj.isTransparent = model.isTransparent;
+
+        obj.modelMatrixBuffer = this.device.createBuffer({
+            label: "Model Matrix Buffer",
+            size: 4 * 16,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+
+
+        obj.bindGroup = createBindGroupForGameObject(this.device, this.bindLayouts, this.buffers, obj.modelMatrixBuffer, this.pointLightPositionsBuffer, this.pointLightColorsBuffer, model);
+        return obj;
+    }
     async loadPointLightObjects() {
         for (const lightData of this.sceneConfig.lights) {
             const obj = new GameObject(this.device);

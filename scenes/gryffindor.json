@@ -19,6 +19,7 @@
                 1
             ]
         },
+
         {
             "name": "office",
             "model": "resources/gryffindor/model.glb",

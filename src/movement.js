@@ -1,7 +1,7 @@
 import { mat4, vec3 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
 import { globals } from "./setup";
 
-export function updateCamera(modelViewProjectionMatrix) {
+export function updateCamera(modelViewProjectionMatrix, webClient) {
     globals.cameraRotation[0] = -globals.mouseDelta.y;
     globals.cameraRotation[1] = -globals.mouseDelta.x;
 
@@ -49,10 +49,10 @@ export function updateCamera(modelViewProjectionMatrix) {
         vec3.scaleAndAdd(movement, movement, up, moveSpeed);
     }
 
-
-
     vec3.add(globals.cameraPosition, globals.cameraPosition, movement);
 
+    webClient.sendPlayerPosition(globals.cameraPosition);
+    
     let viewMatrix = mat4.create();
     let target = vec3.create();
     vec3.add(target, globals.cameraPosition, forward);
