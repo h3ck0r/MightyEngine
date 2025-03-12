@@ -183,15 +183,24 @@ export async function setup() {
     const { canvas, context } = await setupCanvas();
 
     if (!navigator.gpu) {
-        console.error('WebGPU not supported');
+        alert("Your browser does not support WebGPU. Please use a browser like Google Chrome or Microsoft Edge.");
+        console.error("WebGPU not supported");
+        return;
     }
 
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) {
-        console.error('No adapter found');
+        alert("No compatible GPU adapter found. Try updating your graphics drivers or using a different browser.");
+        console.error("No adapter found");
+        return;
     }
 
     const device = await adapter.requestDevice();
+    if (!device) {
+        alert("Your browser does not support WebGPU. Please use a browser like Google Chrome or Microsoft Edge.");
+        console.error("Failed to create WebGPU device");
+        return;
+    }
 
     device.addEventListener('uncapturederror', event => console.error(event.error.message));
     const canvasFormat = navigator.gpu.getPreferredCanvasFormat();

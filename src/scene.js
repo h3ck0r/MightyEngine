@@ -28,6 +28,17 @@ export class Scene {
         let playerObj = this.loadObject(this.playerModel.models[0], objectData);
         this.players[playerId] = playerObj;
     }
+    removePlayer(playerId) {
+        const playerObj = this.players[playerId];
+        if (playerObj) {
+            playerObj.modelMatrixBuffer?.destroy();
+            playerObj.vertexBuffer?.destroy();
+            playerObj.indexBuffer?.destroy();
+
+            delete this.players[playerId];
+        }
+    }
+
     async loadObjects() {
         for (const objectData of this.sceneConfig.objects) {
             const parentObj = new GameObject(this.device);

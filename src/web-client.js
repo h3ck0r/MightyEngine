@@ -1,21 +1,18 @@
 
-import { GameObject } from "./game-object";
-
 export class WebClient {
     constructor(connectionStr, scene) {
         this.socket = new WebSocket(connectionStr);
-        this.players = {};
         this.scene = scene;
         this.playerId = null;
         this.initWebHandlers();
+        window.addEventListener("beforeunload", () => this.disconnect());
     }
     initWebHandlers() {
         this.socket.onmessage = (event) => {
             const data = JSON.parse(event.data);
             if (data.type === "init") {
-                this.players = data.players;
                 this.playerId = data.id;
-                for (const [id, player] of Object.entries(this.players)) {
+                for (const [id, player] of Object.entries(data.players)) {
                     if (id == this.playerId) {
                         continue;
                     }
@@ -33,7 +30,7 @@ export class WebClient {
                     return;
                 }
                 this.scene.players[data.id].position[0] = data.position.x;
-                this.scene.players[data.id].position[1] = data.position.y-0.65;
+                this.scene.players[data.id].position[1] = data.position.y - 0.65;
                 this.scene.players[data.id].position[2] = data.position.z;
 
                 this.scene.players[data.id].rotation[0] = -data.position.rx;
@@ -41,7 +38,7 @@ export class WebClient {
 
             }
             else if (data.type === "remove") {
-                delete this.players[data.id];
+                this.scene.removePlayer(data.id);
             }
         };
     }
@@ -55,6 +52,12 @@ export class WebClient {
             }));
         } else {
             console.warn("WebSocket not open. Skipping position update.");
+        }
+    }
+    disconnect() {
+        if (this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify({ type: "disconnect", id: this.playerId }));
+            this.socket.close();
         }
     }
 
