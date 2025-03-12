@@ -19,25 +19,30 @@ jobs:
         with:
           lfs: true  # This ensures that Git LFS files are pulled during checkout
 
-      # Step 2: Set up Node.js
+      # Step 2: Remove node_modules and package-lock.json to fix potential dependency issues
+      - name: Remove node_modules and package-lock.json
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
+
+      # Step 3: Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16'  # Specify your desired Node.js version
 
-      # Step 3: Install dependencies
+      # Step 4: Install dependencies
       - name: Install dependencies
         run: npm install  # Install dependencies from package.json
 
-      # Step 4: Build the project using Vite
+      # Step 5: Build the project using Vite
       - name: Build the project with Vite
         run: npx vite build  # Build the project using Vite (production build)
 
-      # Step 5: Deploy to GitHub Pages using Vite deploy
+      # Step 6: Deploy to GitHub Pages using peaceiris/actions-gh-pages
       - name: Deploy to GitHub Pages
-        run: npx vite deploy  # This assumes you have a vite config with GitHub Pages as the deploy target
-
-      # Step 6: Clean up if necessary (optional, to remove any temporary files or directories)
-      - name: Clean up temporary files
-        run: rm -rf path_to_cleanup  # Specify the path to clean up if needed (e.g., models directory)
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # Automatically provided by GitHub
+          publish_dir: ./dist  # Directory where Vite's build files are located
 
