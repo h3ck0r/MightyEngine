@@ -1,5 +1,5 @@
 import { mat4, vec3 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
-import { globals } from "./setup";
+import { globals } from "./setup.js";
 
 export function updateCamera(modelViewProjectionMatrix, webClient) {
     globals.cameraRotation[0] = -globals.mouseDelta.y;
