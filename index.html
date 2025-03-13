@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mighty Engine</title>
+    <link rel="icon" href="pictures/ico.png">
+        <script type="importmap">
+        {
+            "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js"
+            }
+        }
+        </script>
+  <script type="module" crossorigin src="./assets/index-C2R_6yjR.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-CO454jGa.css">
+</head>
+
+<body>
+    <div id="main-menu">
+        <div>Welcome to Mighty Engine 👻</div>
+        <div>(Please note that this is a very early version and bugs are possible)</div>
+        <button id="exit-button">Ok</button>
+    </div>
+    <button id="show-menu-btn" style="display: none;">☰</button>
+    <div id="right-menu">
+        <button id="close-menu-btn">✖</button>
+        <div>
+            <div>
+                <span id="fps-counter" class="no-events">FPS: 0 | Frame Time: 0ms</span>
+            </div>
+            <div>
+                <span id="player-coords" class="no-events">x: 0 y: 0 z: 0</span>
+
+            </div>
+            <div>
+                <span id="player-rotation" class="no-events">rx: 0 ry: 0 rz: 0</span>
+            </div>
+            <hr>
+            <div>
+                <label for="scene-selector" class="no-events">Scene:</label>
+                <select id="scene-selector"></select>
+            </div>
+            <div>
+                <label for="graphics-selector" class="no-events">Graphics Preset:</label>
+                <select id="graphics-selector"></select>
+            </div>
+            <hr>
+            <span class="no-events">Global Lighting:</span>
+            <div id="input-lighting-x" style="display: flex; gap: 10px; align-items: center;">
+                <span class="no-events">LightingX:</span>
+                <div>
+                    <input type="range" min="-100" max="100" step="0.1" id="lighting-x"
+                        oninput="updateValue('lighting-x', this.value)" />
+                    <span class="no-events" id="lighting-x-value">0</span>
+                </div>
+            </div>
+            <div id="input-lighting-y" style="display: flex; gap: 10px; align-items: center;">
+                <span class="no-events">LightingY:</span>
+                <div>
+                    <input type="range" min="-100" max="100" step="0.1" id="lighting-y"
+                        oninput="updateValue('lighting-y', this.value)" />
+                    <span class="no-events" id="lighting-y-value">0</span>
+                </div>
+            </div>
+            <div id="input-lighting-z" style="display: flex; gap: 10px; align-items: center;">
+                <span class="no-events">LightingZ:</span>
+                <div>
+                    <input type="range" min="-100" max="100" step="0.1" id="lighting-z"
+                        oninput="updateValue('lighting-z', this.value)" />
+                    <span class="no-events" id="lighting-z-value">0</span>
+                </div>
+            </div>
+            <div id="input-lighting-w" style="display: flex; gap: 10px; align-items: center;">
+                <span class="no-events">Intensity:</span>
+                <div>
+                    <input type="range" min="0" max="2" value="1.0" step="0.1" id="lighting-w"
+                        oninput="updateValue('lighting-w', this.value)" />
+                    <span class="no-events" id="lighting-w-value">1.0</span>
+                </div>
+            </div>
+            <hr>
+        </div>
+        <div>
+            <span class="no-events">Post-Processing Effects:</span>
+            <div>
+                <label><input type="checkbox" id="toggle-bloom"> Bloom</label>
+            </div>
+            <div id="input-bloom-str" style="display: flex; gap: 10px; align-items: center;">
+                <span class="no-events">Bloom Str:</span>
+                <div>
+                    <input type="range" min="0" max="1" step="0.01" value="0.1" id="bloom-str"
+                        oninput="updateValue('bloom-str', this.value)" />
+                    <span class="no-events" id="bloom-str-value">0.1</span>
+                </div>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-motion-blur"> Motion Blur</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-exposure"> Exposure</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-stylized-shadows"> Stylized Shadows</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-scanlines"> Scanlines</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-random-noise"> Random Noise</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-posterize"> Posterize</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-chromatic-aberration"> Chromatic Abberation</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-vignette"> Vignette</label>
+            </div>
+            <div>
+                <label><input type="checkbox" id="toggle-invert-color"> Invert Colors</label>
+            </div>
+        </div>
+        <hr>
+        <div>
+            <label><input type="checkbox" id="toggle-spheres"> Toggle Light Spheres</label>
+        </div>
+        <script>
+            function updateValue(inputId, value) {
+                document.getElementById(inputId + '-value').textContent = value;
+            }
+            document.getElementById("close-menu-btn").addEventListener("click", function () {
+                document.getElementById("right-menu").style.display = "none";
+                document.getElementById("show-menu-btn").style.display = "block";
+            });
+
+            document.getElementById("show-menu-btn").addEventListener("click", function () {
+                document.getElementById("right-menu").style.display = "block";
+                document.getElementById("show-menu-btn").style.display = "none";
+            });
+        </script>
+
+    </div>
+    <canvas id="render-field" width="512" height="512"></canvas>
+</body>
+
+</html>

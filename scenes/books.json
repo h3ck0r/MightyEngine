@@ -1,0 +1,56 @@
+{
+    "objects": [
+        {
+            "name": "book",
+            "model": "./resources/book/model.glb",
+            "position": [
+                2,
+                0,
+                2
+            ],
+            "rotation": [
+                0,
+                6,
+                0
+            ],
+            "scale": [
+                1,
+                1,
+                1
+            ]
+        }
+    ],
+    "lights": [
+        {
+            "position": [
+                0,
+                0,
+                0
+            ],
+            "color": [
+                1,
+                1,
+                1,
+                10
+            ],
+            "moveable": true
+        },
+        {
+            "position": [
+                0,
+                0,
+                0
+            ],
+            "color": [
+                1,
+                1,
+                1,
+                10
+            ],
+            "moveable": true
+        }
+    ],
+    "skybox": {
+        "texture": "./resources/spacecubemap"
+    }
+}
