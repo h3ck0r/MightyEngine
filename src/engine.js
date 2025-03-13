@@ -118,23 +118,38 @@ export class Engine {
         this.device.queue.writeBuffer(this.buffers.cameraPositionBuffer, 0, globals.cameraPosition);
     }
     updatePointLights() {
-        let offset = 0;
-        const radius = 5.0;
-        const localScene = this.scene;
+        let radius = 10;
+        const pointLightCount = this.scene.pointLightObjects.length;
+        if (pointLightCount === 0) return; 
 
-        for (let i = 0; i < localScene.pointLightObjects.length; i++) {
-            const obj = localScene.pointLightObjects[i];
+        const angleStep = (Math.PI * 2) / pointLightCount;
+        const positionBuffer = new Float32Array(pointLightCount * 4);
+        const colorBuffer = new Float32Array(pointLightCount * 4);
+
+        for (let i = 0; i < pointLightCount; i++) {
+            const obj = this.scene.pointLightObjects[i];
+
             if (obj.moveable) {
-                const angle = this.time * 0.5 + (i * (Math.PI * 2 / localScene.pointLightObjects.length));
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
-                obj.position = vec3.fromValues(x, obj.position[1], z);
+                const angle = this.time * 0.5 + i * angleStep;
+                obj.position[0] = Math.cos(angle) * radius;
+                obj.position[2] = Math.sin(angle) * radius;
                 obj.updateTransform();
             }
-            this.device.queue.writeBuffer(localScene.pointLightPositionsBuffer, offset * 16, obj.position);
-            this.device.queue.writeBuffer(localScene.pointLightColorsBuffer, offset * 16, obj.defaultColor);
-            offset += 1;
+
+            const offset = i * 4;
+            positionBuffer[offset] = obj.position[0];
+            positionBuffer[offset + 1] = obj.position[1];
+            positionBuffer[offset + 2] = obj.position[2];
+
+            colorBuffer[offset] = obj.defaultColor[0];
+            colorBuffer[offset + 1] = obj.defaultColor[1];
+            colorBuffer[offset + 2] = obj.defaultColor[2];
+            colorBuffer[offset + 3] = obj.defaultColor[3];
         }
+        this.device.queue.writeBuffer(this.scene.pointLightPositionsBuffer, 0, positionBuffer);
+        this.device.queue.writeBuffer(this.scene.pointLightColorsBuffer, 0, colorBuffer);
+
+
     }
     renderPointLights(encoder) {
         const localScene = this.scene;

@@ -29,7 +29,6 @@ export function updateCamera(modelViewProjectionMatrix, webClient) {
         globals.moveSpeed = globals.baseMoveSpeed;
     }
 
-
     let moveSpeed = globals.moveSpeed;
     let movement = vec3.create();
 

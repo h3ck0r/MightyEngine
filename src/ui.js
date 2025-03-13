@@ -7,7 +7,15 @@ let fps = 0;
 const fpsCounter = document.getElementById("fps-counter");
 const playerCoords = document.getElementById("player-coords");
 const playerRotation = document.getElementById("player-rotation");
-
+const renderField = document.getElementById("render-field");
+const menuExitButton = document.getElementById("exit-button");
+const inputLighting = [
+    document.querySelector("#input-lighting-x input"),
+    document.querySelector("#input-lighting-y input"),
+    document.querySelector("#input-lighting-z input"),
+    document.querySelector("#input-lighting-w input")
+];
+const inputBloomStr = document.querySelector("#input-bloom-str input");
 
 export function updateUI() {
     const now = performance.now();
@@ -24,135 +32,79 @@ export function updateUI() {
     playerCoords.textContent = `x: ${globals.cameraPosition[0].toFixed(3)} 
                                 y: ${globals.cameraPosition[1].toFixed(3)} 
                                 z: ${globals.cameraPosition[2].toFixed(3)}`;
-
     playerRotation.textContent = `rx: ${globals.cameraRotation[0].toFixed(3)} 
                                 ry: ${globals.cameraRotation[1].toFixed(3)} `;
 }
 
 export async function setupUI(device, buffers) {
-    window.addEventListener("keydown", (e) => {
-        globals.keyboardKeys[e.code] = true;
-    });
-
-    window.addEventListener("keyup", (e) => {
-        globals.keyboardKeys[e.code] = false;
-    });
+    window.addEventListener("keydown", (e) => (globals.keyboardKeys[e.code] = true));
+    window.addEventListener("keyup", (e) => (globals.keyboardKeys[e.code] = false));
 
     window.addEventListener("mousemove", (e) => {
         if (document.pointerLockElement) {
             globals.mouseDelta.x += e.movementX * globals.mouseSensitivity;
             globals.mouseDelta.y += e.movementY * globals.mouseSensitivity;
-
             globals.mouseDelta.y = Math.max(-1.3, Math.min(1.3, globals.mouseDelta.y));
         }
     });
 
-    const renderField = document.getElementById("render-field")
-    renderField.addEventListener("click", (e) => {
+    renderField.addEventListener("click", () => {
         if (!document.pointerLockElement) {
             document.body.requestPointerLock();
             document.getElementById("main-menu").style.display = "none";
         }
     });
 
-    const inputLightingX = document.querySelector("#input-lighting-x input");
-    const inputLightingY = document.querySelector("#input-lighting-y input");
-    const inputLightingZ = document.querySelector("#input-lighting-z input");
-    const inputLightingW = document.querySelector("#input-lighting-w input");
-    const inputBloomStr = document.querySelector("#input-bloom-str input");
-    inputLightingX.addEventListener("input", (e) => {
-        globals.lightDirection[0] = e.target.value;
-        device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
-    });
-    inputLightingY.addEventListener("input", (e) => {
-        globals.lightDirection[1] = e.target.value;
-        device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
-    });
-    inputLightingZ.addEventListener("input", (e) => {
-        globals.lightDirection[2] = e.target.value;
-        device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
-    });
-    inputLightingW.addEventListener("input", (e) => {
-        globals.lightDirection[3] = e.target.value;
-        device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
-    });
-    inputBloomStr.addEventListener("input", (e) => {
-        globals.bloomStr[0] = e.target.value;
-        device.queue.writeBuffer(buffers.bloomStrBuffer, 0, globals.bloomStr);
-    });
-
-    const menuExitButton = document.getElementById("exit-button");
     menuExitButton.addEventListener("click", () => {
         document.getElementById("main-menu").style.display = "none";
         document.body.requestPointerLock();
     });
 
-    // const toggleDebugMenu = document.getElementById("toggle-debug-menu");
-    // let debugMenuToggled = true;
-    // toggleDebugMenu.addEventListener("click", () => {
-    //     if (debugMenuToggled) {
-    //         document.getElementById("right-menu").style.display = "none";
-    //         debugMenuToggled = false;
-    //     }
-    //     else {
-    //         document.getElementById("right-menu").style.display = "block";
-    //         debugMenuToggled = true;
-    //     }
-    // })
-    initSceneSelector();
-    initGraphicsSelector();
-    initPostProcessSelectors();
-    initExtraSettings();
-}
+    inputLighting.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+            globals.lightDirection[index] = parseFloat(e.target.value);
+            device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
+        });
+    });
 
+    inputBloomStr.addEventListener("input", (e) => {
+        globals.bloomStr[0] = parseFloat(e.target.value);
+        device.queue.writeBuffer(buffers.bloomStrBuffer, 0, globals.bloomStr);
+    });
 
-function initSceneSelector() {
-    const sceneSelector = document.getElementById("scene-selector");
-    const scenes = [
+    initSelector("scene-selector", [
         { name: "Gryffindor", id: "./scenes/gryffindor.json" },
         { name: "Book", id: "./scenes/books.json" },
         { name: "Chicken", id: "./scenes/chickens.json" },
         { name: "Dumbledor", id: "./scenes/dumbledor.json" },
         { name: "Potions Class", id: "./scenes/potionclass.json" }
-    ];
+    ], (selectedScene) => window.engine.loadScene(selectedScene));
 
-    scenes.forEach(scene => {
-        const option = document.createElement("option");
-        option.value = scene.id;
-        option.textContent = scene.name;
-        sceneSelector.appendChild(option);
-    });
-
-    sceneSelector.addEventListener("change", (event) => {
-        const selectedScene = event.target.value;
-        const engine = window.engine;
-        // engine.unloadScene();
-        engine.loadScene(selectedScene);
-    });
-}
-
-
-function initGraphicsSelector() {
-    const sceneSelector = document.getElementById("graphics-selector");
-    const scenes = [
+    initSelector("graphics-selector", [
         { name: "Albedo+Soft Shadows", id: 0 },
-        { name: "PBR", id: 1 },
-    ];
-
-    scenes.forEach(scene => {
-        const option = document.createElement("option");
-        option.value = scene.id;
-        option.textContent = scene.name;
-        sceneSelector.appendChild(option);
-    });
-
-    sceneSelector.addEventListener("change", (event) => {
+        { name: "PBR", id: 1 }
+    ], (graphicsMode) => {
         const engine = window.engine;
-        engine.graphicsSettings[0] = event.target.value;
-        const graphicsBuffer = engine.buffers.graphicsSettingsBuffer;
-        engine.device.queue.writeBuffer(graphicsBuffer, 0, new Uint32Array(engine.graphicsSettings)); // 1st is graphics mode, rest reserved
+        engine.graphicsSettings[0] = graphicsMode;
+        engine.device.queue.writeBuffer(engine.buffers.graphicsSettingsBuffer, 0, new Uint32Array(engine.graphicsSettings));
     });
+
+    initPostProcessSelectors();
+    initExtraSettings();
 }
+
+function initSelector(elementId, options, onChange) {
+    const selector = document.getElementById(elementId);
+    options.forEach(({ name, id }) => {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = name;
+        selector.appendChild(option);
+    });
+
+    selector.addEventListener("change", (event) => onChange(event.target.value));
+}
+
 function initPostProcessSelectors() {
     const effects = {
         "toggle-bloom": 0x01,
@@ -167,17 +119,14 @@ function initPostProcessSelectors() {
         "toggle-invert-color": 0x200
     };
 
-
     const engine = window.engine;
     const graphicsBuffer = engine.buffers.graphicsSettingsBuffer;
-    function updateGraphicsSettings() {
-        engine.graphicsSettings[1] = 0;
-        for (const [id, flag] of Object.entries(effects)) {
-            if (document.getElementById(id).checked) {
-                engine.graphicsSettings[1] |= flag;
-            }
 
-        }
+    function updateGraphicsSettings() {
+        engine.graphicsSettings[1] = Object.entries(effects).reduce((flags, [id, flag]) => {
+            return flags | (document.getElementById(id).checked ? flag : 0);
+        }, 0);
+
         engine.device.queue.writeBuffer(graphicsBuffer, 0, new Uint32Array(engine.graphicsSettings));
     }
 
@@ -186,11 +135,8 @@ function initPostProcessSelectors() {
     });
 }
 
-
 function initExtraSettings() {
-    const spheresSelector = document.getElementById("toggle-spheres");
-
-    spheresSelector.addEventListener("change", (event) => {
+    document.getElementById("toggle-spheres").addEventListener("change", (event) => {
         globals.graphicsSettings.enableLightSpheres = event.target.checked;
     });
 }
