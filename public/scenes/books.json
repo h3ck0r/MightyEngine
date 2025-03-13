@@ -2,7 +2,7 @@
     "objects": [
         {
             "name": "book",
-            "model": "./public/resources/book/model.glb",
+            "model": "./resources/book/model.glb",
             "position": [
                 2,
                 0,
@@ -51,6 +51,6 @@
         }
     ],
     "skybox": {
-        "texture": "./public/resources/spacecubemap"
+        "texture": "./resources/spacecubemap"
     }
 }

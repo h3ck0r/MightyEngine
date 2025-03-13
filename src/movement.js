@@ -52,7 +52,7 @@ export function updateCamera(modelViewProjectionMatrix, webClient) {
     vec3.add(globals.cameraPosition, globals.cameraPosition, movement);
 
     webClient.sendPlayerPosition(globals.cameraPosition, globals.cameraRotation);
-    
+
     let viewMatrix = mat4.create();
     let target = vec3.create();
     vec3.add(target, globals.cameraPosition, forward);

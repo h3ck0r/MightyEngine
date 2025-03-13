@@ -2,7 +2,7 @@
     "objects": [
         {
             "name": "office",
-            "model": "./public/resources/gryffindor/model.glb",
+            "model": "./resources/gryffindor/model.glb",
             "position": [
                 0,
                 0,
@@ -51,6 +51,6 @@
         }
     ],
     "skybox": {
-        "texture": "./public/resources/animeskycubemap"
+        "texture": "./resources/animeskycubemap"
     }
 }

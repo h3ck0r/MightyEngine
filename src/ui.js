@@ -109,11 +109,11 @@ export async function setupUI(device, buffers) {
 function initSceneSelector() {
     const sceneSelector = document.getElementById("scene-selector");
     const scenes = [
-        { name: "Gryffindor", id: "./public/scenes/gryffindor.json" },
-        { name: "Book", id: "./public/scenes/books.json" },
-        { name: "Chicken", id: "./public/scenes/chickens.json" },
-        { name: "Dumbledor", id: "./public/scenes/dumbledor.json" },
-        { name: "Potions Class", id: "./public/scenes/potionclass.json" }
+        { name: "Gryffindor", id: "./scenes/gryffindor.json" },
+        { name: "Book", id: "./scenes/books.json" },
+        { name: "Chicken", id: "./scenes/chickens.json" },
+        { name: "Dumbledor", id: "./scenes/dumbledor.json" },
+        { name: "Potions Class", id: "./scenes/potionclass.json" }
     ];
 
     scenes.forEach(scene => {

@@ -9,7 +9,7 @@ body {
 
 body {
     background: #121212;
-    cursor: url("./public/pictures/cursor.png"), auto !important;
+    cursor: url("pictures/cursor.png"), auto !important;
 }
 
 a,
@@ -18,7 +18,7 @@ input,
 select,
 label,
 textarea {
-    cursor: url("./public/pictures/cursor-glowed.png"), auto !important;
+    cursor: url("pictures/cursor-glowed.png"), auto !important;
 }
 
 canvas {

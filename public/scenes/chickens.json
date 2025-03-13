@@ -2,7 +2,7 @@
     "objects": [
         {
             "name": "chicken",
-            "model": "./public/resources/chicken/model.glb",
+            "model": "./resources/chicken/model.glb",
             "position": [
                 0,
                 0,
@@ -51,6 +51,6 @@
         }
     ],
     "skybox": {
-        "texture": "./public/resources/spacecubemap"
+        "texture": "./resources/spacecubemap"
     }
 }

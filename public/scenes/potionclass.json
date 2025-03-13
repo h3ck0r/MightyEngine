@@ -2,7 +2,7 @@
     "objects": [
         {
             "name": "office",
-            "model": "./public/resources/potionclass/model.glb",
+            "model": "./resources/potionclass/model.glb",
             "position": [
                 0,
                 0,
@@ -50,6 +50,6 @@
         }
     ],
     "skybox": {
-        "texture": "./public/resources/animeskycubemap"
+        "texture": "./resources/animeskycubemap"
     }
 }
