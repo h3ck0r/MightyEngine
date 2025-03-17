@@ -1,4 +1,4 @@
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.174.0/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three-stdlib';
 
 export async function loadGLTFModel(url) {
     return new Promise((resolve, reject) => {

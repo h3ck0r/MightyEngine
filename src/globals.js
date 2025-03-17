@@ -21,4 +21,5 @@ export const globals = {
     keyboardKeys: {},
     mouseDelta: { x: 0, y: 0 },
     mouseSensitivity: 0.002,
+    shadowDepthTextureSize: 2048
 }

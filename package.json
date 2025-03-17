@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "dependencies": {
     "gl-matrix": "^3.4.3",
-    "three": "^0.173.0"
+    "three": "^0.174.0",
+    "three-stdlib": "^2.35.14"
   },
   "devDependencies": {
     "gh-pages": "^6.3.0",
