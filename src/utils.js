@@ -78,10 +78,6 @@ export async function loadTexture(device, url) {
     return { texture, sampler };
 }
 
-export async function loadShader(url) {
-    const response = await fetch(url);
-    return await response.text();
-}
 
 export async function loadCubemapTexture(device, imageUrls) {
     const imageBlobs = await Promise.all(imageUrls.map(url => fetch(url).then(res => res.blob())));

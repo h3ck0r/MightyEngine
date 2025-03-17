@@ -1,9 +1,8 @@
 import { vec3, mat4 } from "gl-matrix";
-import { updateUI } from "./ui.js";
-import { setup, loadShaders } from "./setup.js";
+import { updateUI, setupUI } from "./ui.js";
+import { setup } from "./setup.js";
 import { Scene } from "./scene.js"
 import { createPostProcessResources } from "./utils.js";
-import { setupUI } from "./ui.js"
 import { createPipeline } from "./pipeline.js"
 import { createBindLayouts } from "./bind-layouts.js";
 import { updateCamera } from "./movement.js"
@@ -13,6 +12,7 @@ import { GameObject } from "./game-object.js";
 import { creatRenderPasses } from "./renderpass.js"
 import { createRenderTextureViews } from "./render-texture.js"
 import { setupBuffers } from "./buffers.js"
+import { loadShaders } from "./shader-loader.js";
 
 export class Engine {
     async init() {
@@ -52,9 +52,9 @@ export class Engine {
             this.update(this.device, this.buffers, this.modelViewProjectionMatrix);
 
             const encoder = this.device.createCommandEncoder();
-            
+
             this.renderScene(encoder);
-            
+
             if (globals.graphicsSettings.enableLightSpheres) {
                 this.renderPointLights(encoder);
             }
@@ -86,26 +86,6 @@ export class Engine {
 
         this.currentSceneName = sceneName;
         this.running = true;
-    }
-    unloadScene() {
-        if (!this.scene) return;
-
-        this.scene.gameObjects.forEach(obj => {
-            obj.vertexBuffer?.destroy();
-            obj.indexBuffer?.destroy();
-            obj.modelMatrixBuffer?.destroy();
-        });
-
-        this.scene.pointLightObjects.forEach(light => {
-            light.modelMatrixBuffer?.destroy();
-        });
-
-        this.scene.skyboxBuffer?.destroy();
-        this.scene.skyboxIndexBuffer?.destroy();
-        this.scene.pointLightPositionsBuffer?.destroy();
-        this.scene.pointLightColorsBuffer?.destroy();
-
-        this.scene = null;
     }
 
     update() {
@@ -149,8 +129,6 @@ export class Engine {
         }
         this.device.queue.writeBuffer(this.scene.pointLightPositionsBuffer, 0, positionBuffer);
         this.device.queue.writeBuffer(this.scene.pointLightColorsBuffer, 0, colorBuffer);
-
-
     }
     renderScene(encoder) {
         const scenePass = encoder.beginRenderPass(this.renderPasses.scenePass);

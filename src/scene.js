@@ -32,10 +32,6 @@ export class Scene {
     removePlayer(playerId) {
         const playerObj = this.players[playerId];
         if (playerObj) {
-            // playerObj.modelMatrixBuffer?.destroy();
-            // playerObj.vertexBuffer?.destroy();
-            // playerObj.indexBuffer?.destroy();
-
             delete this.players[playerId];
         }
     }
@@ -197,10 +193,11 @@ export class Scene {
 
             this.sceneConfig = await response.json();
 
-            await this.loadPointLightObjects();
-            await this.loadObjects();
-            await this.loadSkybox();
-
+            await Promise.all([
+                this.loadPointLightObjects(),
+                this.loadObjects(),
+                this.loadSkybox()
+            ]);
         } catch (error) {
             console.error("Error loading scene:", error);
         }
