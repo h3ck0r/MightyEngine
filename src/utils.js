@@ -83,33 +83,8 @@ export async function loadShader(url) {
     return await response.text();
 }
 
-export function createRenderPass(encoder, textureView, depthView = null, clearColor = true, clearDepth = true) {
-    let colorAttachments = [{
-        view: textureView,
-        loadOp: clearColor ? "clear" : "load",
-        clearValue: { r: 0.15, g: 0.15, b: 0.2, a: 1 },
-        storeOp: "store"
-    }];
-
-    let renderPassDescriptor = {
-        colorAttachments: colorAttachments
-    };
-
-    if (depthView) {
-        renderPassDescriptor.depthStencilAttachment = {
-            view: depthView,
-            depthLoadOp: clearDepth ? "clear" : "load",
-            depthClearValue: 1.0,
-            depthStoreOp: "store"
-        };
-    }
-
-    return encoder.beginRenderPass(renderPassDescriptor);
-}
-
 export async function loadCubemapTexture(device, imageUrls) {
     const imageBlobs = await Promise.all(imageUrls.map(url => fetch(url).then(res => res.blob())));
-
     const imageBitmaps = await Promise.all(imageBlobs.map(blob => createImageBitmap(blob)));
 
     const width = imageBitmaps[0].width;
@@ -157,4 +132,54 @@ export function createBindGroupForGameObject(device, bindLayouts, buffers, model
             { binding: 17, resource: { buffer: buffers.graphicsSettingsBuffer } }
         ]
     });
+}
+
+export function createPostProcessResources(device, bindLayouts, renderTextureViews, buffers) {
+    const bloomSampler = device.createSampler({
+        magFilter: "linear",
+        minFilter: "linear"
+    });
+
+    const sceneSampler = device.createSampler({
+        magFilter: "linear",
+        minFilter: "linear",
+    });
+
+    const postProcessBindGroup = device.createBindGroup({
+        layout: bindLayouts.postProcessBindGroupLayout,
+        entries: [
+            { binding: 0, resource: renderTextureViews.sceneTextureView },
+            { binding: 1, resource: sceneSampler },
+            { binding: 2, resource: renderTextureViews.blurVTextureView },
+            { binding: 3, resource: bloomSampler },
+            { binding: 4, resource: { buffer: buffers.bloomStrBuffer } },
+            { binding: 5, resource: { buffer: buffers.graphicsSettingsBuffer } }
+        ],
+    });
+
+    const bloomBindGroup = device.createBindGroup({
+        layout: bindLayouts.bloomBindGroupLayout,
+        entries: [
+            { binding: 0, resource: renderTextureViews.sceneTextureView },
+            { binding: 1, resource: bloomSampler }
+        ],
+    });
+
+    const blurHBindGroup = device.createBindGroup({
+        layout: bindLayouts.bloomBindGroupLayout,
+        entries: [
+            { binding: 0, resource: renderTextureViews.bloomTextureView },
+            { binding: 1, resource: bloomSampler }
+        ],
+    });
+    const blurVBindGroup = device.createBindGroup({
+        layout: bindLayouts.bloomBindGroupLayout,
+        entries: [
+            { binding: 0, resource: renderTextureViews.blurHTextureView },
+            { binding: 1, resource: bloomSampler }
+        ],
+    });
+
+
+    return { postProcessBindGroup, bloomBindGroup, blurVBindGroup, blurHBindGroup };
 }

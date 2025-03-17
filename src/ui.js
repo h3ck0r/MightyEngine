@@ -1,4 +1,4 @@
-import { globals } from "./setup.js";
+import { globals } from "./globals.js";
 
 let lastFrameTime = performance.now();
 let frameCount = 0;
@@ -9,11 +9,16 @@ const playerCoords = document.getElementById("player-coords");
 const playerRotation = document.getElementById("player-rotation");
 const renderField = document.getElementById("render-field");
 const menuExitButton = document.getElementById("exit-button");
-const inputLighting = [
-    document.querySelector("#input-lighting-x input"),
-    document.querySelector("#input-lighting-y input"),
-    document.querySelector("#input-lighting-z input"),
+const inputDirLighting = [
+    document.querySelector("#input-lighting-dir-x input"),
+    document.querySelector("#input-lighting-dir-y input"),
+    document.querySelector("#input-lighting-dir-z input"),
     document.querySelector("#input-lighting-w input")
+];
+const inputPosLighting = [
+    document.querySelector("#input-lighting-pos-x input"),
+    document.querySelector("#input-lighting-pos-y input"),
+    document.querySelector("#input-lighting-pos-z input"),
 ];
 const inputBloomStr = document.querySelector("#input-bloom-str input");
 
@@ -29,11 +34,11 @@ export function updateUI() {
 
     const frameTime = (1000 / (fps || 1)).toFixed(2);
     fpsCounter.textContent = `FPS: ${fps} | Frame Time: ${frameTime}ms`;
-    playerCoords.textContent = `x: ${globals.cameraPosition[0].toFixed(3)} 
-                                y: ${globals.cameraPosition[1].toFixed(3)} 
-                                z: ${globals.cameraPosition[2].toFixed(3)}`;
-    playerRotation.textContent = `rx: ${globals.cameraRotation[0].toFixed(3)} 
-                                ry: ${globals.cameraRotation[1].toFixed(3)} `;
+    playerCoords.textContent = `x: ${globals.camera.cameraPosition[0].toFixed(3)} 
+                                y: ${globals.camera.cameraPosition[1].toFixed(3)} 
+                                z: ${globals.camera.cameraPosition[2].toFixed(3)}`;
+    playerRotation.textContent = `rx: ${globals.camera.cameraRotation[0].toFixed(3)} 
+                                ry: ${globals.camera.cameraRotation[1].toFixed(3)} `;
 }
 
 export async function setupUI(device, buffers) {
@@ -60,10 +65,17 @@ export async function setupUI(device, buffers) {
         document.body.requestPointerLock();
     });
 
-    inputLighting.forEach((input, index) => {
+    inputDirLighting.forEach((input, index) => {
         input.addEventListener("input", (e) => {
-            globals.lightDirection[index] = parseFloat(e.target.value);
-            device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.lightDirection);
+            globals.globalLight.lightDirection[index] = parseFloat(e.target.value);
+            device.queue.writeBuffer(buffers.globalLightDirectionBuffer, 0, globals.globalLight.lightDirection);
+        });
+    });
+
+    inputPosLighting.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+            globals.globalLight.lightPosition[index] = parseFloat(e.target.value);
+            device.queue.writeBuffer(buffers.globalLightPositionBuffer, 0, globals.globalLight.lightPosition);
         });
     });
 
@@ -77,7 +89,8 @@ export async function setupUI(device, buffers) {
         { name: "Book", id: "./scenes/books.json" },
         { name: "Chicken", id: "./scenes/chickens.json" },
         { name: "Dumbledor", id: "./scenes/dumbledor.json" },
-        { name: "Potions Class", id: "./scenes/potionclass.json" }
+        { name: "Potions Class", id: "./scenes/potionclass.json" },
+        { name: "The Mill", id: "./scenes/mill.json" }
     ], (selectedScene) => window.engine.loadScene(selectedScene));
 
     initSelector("graphics-selector", [

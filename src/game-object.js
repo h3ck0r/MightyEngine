@@ -1,5 +1,5 @@
 import { loadGLTFModel } from "./utils.js"
-import { mat4, vec3 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
+import { mat4, vec3 } from 'gl-matrix';
 
 export class GameObject {
     constructor(device) {

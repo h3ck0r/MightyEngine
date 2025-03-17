@@ -1,12 +1,12 @@
-import { mat4, vec3 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
-import { globals } from "./setup.js";
+import { mat4, vec3 } from 'gl-matrix';
+import { globals } from "./globals.js";
 
 export function updateCamera(modelViewProjectionMatrix, webClient) {
-    globals.cameraRotation[0] = -globals.mouseDelta.y;
-    globals.cameraRotation[1] = -globals.mouseDelta.x;
+    globals.camera.cameraRotation[0] = -globals.mouseDelta.y;
+    globals.camera.cameraRotation[1] = -globals.mouseDelta.x;
 
-    let yaw = globals.cameraRotation[1];
-    let pitch = globals.cameraRotation[0];
+    let yaw = globals.camera.cameraRotation[1];
+    let pitch = globals.camera.cameraRotation[0];
 
     let forward = vec3.fromValues(
         Math.cos(pitch) * Math.sin(yaw),
@@ -24,12 +24,12 @@ export function updateCamera(modelViewProjectionMatrix, webClient) {
     vec3.cross(right, forward, up);
 
     if (globals.keyboardKeys["ShiftLeft"] || globals.keyboardKeys["ShiftRight"]) {
-        globals.moveSpeed = globals.baseMoveSpeed * 3.5;
+        globals.camera.moveSpeed = globals.camera.baseMoveSpeed * globals.camera.speedup;
     } else {
-        globals.moveSpeed = globals.baseMoveSpeed;
+        globals.camera.moveSpeed = globals.camera.baseMoveSpeed;
     }
 
-    let moveSpeed = globals.moveSpeed;
+    let moveSpeed = globals.camera.moveSpeed;
     let movement = vec3.create();
 
     if (globals.keyboardKeys["KeyW"]) {
@@ -48,17 +48,17 @@ export function updateCamera(modelViewProjectionMatrix, webClient) {
         vec3.scaleAndAdd(movement, movement, up, moveSpeed);
     }
 
-    vec3.add(globals.cameraPosition, globals.cameraPosition, movement);
+    vec3.add(globals.camera.cameraPosition, globals.camera.cameraPosition, movement);
 
-    webClient.sendPlayerPosition(globals.cameraPosition, globals.cameraRotation);
+    webClient.sendPlayerPosition(globals.camera.cameraPosition, globals.camera.cameraRotation);
 
     let viewMatrix = mat4.create();
     let target = vec3.create();
-    vec3.add(target, globals.cameraPosition, forward);
-    mat4.lookAt(viewMatrix, globals.cameraPosition, target, up);
+    vec3.add(target, globals.camera.cameraPosition, forward);
+    mat4.lookAt(viewMatrix, globals.camera.cameraPosition, target, up);
 
     let projectionMatrix = mat4.create();
-    mat4.perspective(projectionMatrix, Math.PI / 4, globals.aspect, globals.nearCamera, globals.farCamer);
+    mat4.perspective(projectionMatrix, Math.PI / 4, globals.camera.aspect, globals.camera.nearCamera, globals.camera.farCamera);
 
     mat4.multiply(modelViewProjectionMatrix, projectionMatrix, viewMatrix);
 }

@@ -24,105 +24,139 @@
             </div>
             <div>
                 <span id="player-coords" class="no-events">x: 0 y: 0 z: 0</span>
-
             </div>
             <div>
                 <span id="player-rotation" class="no-events">rx: 0 ry: 0 rz: 0</span>
             </div>
             <hr>
+
             <div>
                 <label for="scene-selector" class="no-events">Scene:</label>
                 <select id="scene-selector"></select>
             </div>
+
             <div>
                 <label for="graphics-selector" class="no-events">Graphics Preset:</label>
                 <select id="graphics-selector"></select>
             </div>
+
             <hr>
             <span class="no-events">Global Lighting:</span>
-            <div id="input-lighting-x" style="display: flex; gap: 10px; align-items: center;">
-                <span class="no-events">LightingX:</span>
-                <div>
-                    <input type="range" min="-100" max="100" step="0.1" id="lighting-x"
-                        oninput="updateValue('lighting-x', this.value)" />
-                    <span class="no-events" id="lighting-x-value">0</span>
+            <button class="toggle-btn" onclick="toggleSection('lighting-controls')">+</button>
+            <div id="lighting-controls" style="display: none; margin-top: 10px;">
+                <div id="input-lighting-dir-x" style="display: flex; gap: 10px; align-items: center;">
+                    <span class="no-events">Direction X:</span>
+                    <div class="slider-container">
+                        <input type="range" min="-100" max="100" step="0.1" id="lighting-dir-x"
+                            oninput="updateValue('lighting-dir-x', this.value)" />
+                    </div>
+                    <span class="no-events" id="lighting-dir-x-value">0</span>
                 </div>
-            </div>
-            <div id="input-lighting-y" style="display: flex; gap: 10px; align-items: center;">
-                <span class="no-events">LightingY:</span>
-                <div>
-                    <input type="range" min="-100" max="100" step="0.1" id="lighting-y"
-                        oninput="updateValue('lighting-y', this.value)" />
-                    <span class="no-events" id="lighting-y-value">0</span>
+                <div id="input-lighting-dir-y" style="display: flex; gap: 10px; align-items: center;">
+                    <span class="no-events">Direction Y:</span>
+                    <div class="slider-container">
+                        <input type="range" min="-100" max="100" step="0.1" id="lighting-dir-y"
+                            oninput="updateValue('lighting-dir-y', this.value)" />
+                    </div>
+                    <span class="no-events" id="lighting-dir-y-value">0</span>
                 </div>
-            </div>
-            <div id="input-lighting-z" style="display: flex; gap: 10px; align-items: center;">
-                <span class="no-events">LightingZ:</span>
-                <div>
-                    <input type="range" min="-100" max="100" step="0.1" id="lighting-z"
-                        oninput="updateValue('lighting-z', this.value)" />
-                    <span class="no-events" id="lighting-z-value">0</span>
+
+                <div id="input-lighting-dir-z" style="display: flex; gap: 10px; align-items: center;">
+                    <span class="no-events">Direction Z:</span>
+                    <div class="slider-container">
+                        <input type="range" min="-100" max="100" step="0.1" id="lighting-dir-z"
+                            oninput="updateValue('lighting-dir-z', this.value)" />
+                    </div>
+                    <span class="no-events" id="lighting-dir-z-value">0</span>
                 </div>
-            </div>
-            <div id="input-lighting-w" style="display: flex; gap: 10px; align-items: center;">
-                <span class="no-events">Intensity:</span>
-                <div>
-                    <input type="range" min="0" max="2" value="1.0" step="0.1" id="lighting-w"
-                        oninput="updateValue('lighting-w', this.value)" />
+                <div id="input-lighting-pos-x" style="display: flex; gap: 10px; align-items: center;">
+                    <span class="no-events">Position X:</span>
+                    <div class="slider-container">
+                        <input type="range" min="-100" max="100" step="0.1" value="10" id="lighting-pos-x"
+                            oninput="updateValue('lighting-pos-x', this.value)" />
+                    </div>
+                    <span class="no-events" id="lighting-pos-x-value">0</span>
+                </div>
+                <div id="input-lighting-pos-z" style="display: flex; gap: 10px; align-items: center;">
+                    <span class="no-events">Position Z:</span>
+                    <div class="slider-container">
+                        <input type="range" min="-100" max="100" step="0.1" value="0" id="lighting-pos-z"
+                            oninput="updateValue('lighting-pos-z', this.value)" />
+                    </div>
+                    <span class="no-events" id="lighting-pos-z-value">0</span>
+                </div>
+                <div id="input-lighting-pos-y" style="display: flex; gap: 10px; align-items: center;">
+                    <span class="no-events">Position Y:</span>
+                    <div class="slider-container">
+                        <input type="range" min="-100" max="100" step="0.1" value="10" id="lighting-pos-y"
+                            oninput="updateValue('lighting-pos-y', this.value)" />
+                    </div>
+                    <span class="no-events" id="lighting-pos-y-value">0</span>
+                </div>
+                <div id="input-lighting-w" style="display: flex; gap: 10px; align-items: center;">
+                    <span class="no-events">Intensity:</span>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="2" value="1.0" step="0.1" id="lighting-w"
+                            oninput="updateValue('lighting-w', this.value)" />
+                    </div>
                     <span class="no-events" id="lighting-w-value">1.0</span>
                 </div>
             </div>
             <hr>
-        </div>
-        <div>
+
             <span class="no-events">Post-Processing Effects:</span>
-            <div>
-                <label><input type="checkbox" id="toggle-bloom"> Bloom</label>
-            </div>
-            <div id="input-bloom-str" style="display: flex; gap: 10px; align-items: center;">
-                <span class="no-events">Bloom Str:</span>
+            <button class="toggle-btn" onclick="toggleSection('post-processing-controls')">+</button>
+            <div id="post-processing-controls" style="display: none;">
                 <div>
-                    <input type="range" min="0" max="1" step="0.01" value="0.1" id="bloom-str"
-                        oninput="updateValue('bloom-str', this.value)" />
-                    <span class="no-events" id="bloom-str-value">0.1</span>
+                    <label><input type="checkbox" id="toggle-bloom"> Bloom</label>
+                </div>
+                <div id="input-bloom-str" style="display: flex; gap: 10px; align-items: center;">
+                    <span class="no-events">Bloom Str:</span>
+                    <div class="slider-container">
+                        <input type="range" min="0" max="1" step="0.01" value="0.1" id="bloom-str"
+                            oninput="updateValue('bloom-str', this.value)" />
+                        <span class="no-events" id="bloom-str-value">0.1</span>
+                    </div>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-motion-blur"> Motion Blur</label>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-exposure"> Exposure</label>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-stylized-shadows"> Stylized Shadows</label>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-scanlines"> Scanlines</label>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-random-noise"> Random Noise</label>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-posterize"> Posterize</label>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-chromatic-aberration"> Chromatic Abberation</label>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-vignette"> Vignette</label>
+                </div>
+                <div>
+                    <label><input type="checkbox" id="toggle-invert-color"> Invert Colors</label>
                 </div>
             </div>
+            <hr>
+
             <div>
-                <label><input type="checkbox" id="toggle-motion-blur"> Motion Blur</label>
+                <label><input type="checkbox" id="toggle-spheres"> Toggle Light Spheres</label>
             </div>
-            <div>
-                <label><input type="checkbox" id="toggle-exposure"> Exposure</label>
-            </div>
-            <div>
-                <label><input type="checkbox" id="toggle-stylized-shadows"> Stylized Shadows</label>
-            </div>
-            <div>
-                <label><input type="checkbox" id="toggle-scanlines"> Scanlines</label>
-            </div>
-            <div>
-                <label><input type="checkbox" id="toggle-random-noise"> Random Noise</label>
-            </div>
-            <div>
-                <label><input type="checkbox" id="toggle-posterize"> Posterize</label>
-            </div>
-            <div>
-                <label><input type="checkbox" id="toggle-chromatic-aberration"> Chromatic Abberation</label>
-            </div>
-            <div>
-                <label><input type="checkbox" id="toggle-vignette"> Vignette</label>
-            </div>
-            <div>
-                <label><input type="checkbox" id="toggle-invert-color"> Invert Colors</label>
-            </div>
-        </div>
-        <hr>
-        <div>
-            <label><input type="checkbox" id="toggle-spheres"> Toggle Light Spheres</label>
         </div>
         <script>
             function updateValue(inputId, value) {
                 document.getElementById(inputId + '-value').textContent = value;
             }
+
             document.getElementById("close-menu-btn").addEventListener("click", function () {
                 document.getElementById("right-menu").style.display = "none";
                 document.getElementById("show-menu-btn").style.display = "block";
@@ -132,16 +166,28 @@
                 document.getElementById("right-menu").style.display = "block";
                 document.getElementById("show-menu-btn").style.display = "none";
             });
+
+            function toggleSection(sectionId) {
+                const section = document.getElementById(sectionId);
+                const currentDisplay = section.style.display;
+
+                if (currentDisplay === "none") {
+                    section.style.display = "block";
+                } else {
+                    section.style.display = "none";
+                }
+            }
         </script>
         <script type="importmap">
         {
             "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js"
+                "three": "https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js"
             }
         }
         </script>
     </div>
     <canvas id="render-field" width="512" height="512"></canvas>
+    <canvas id="debugCanvas" width="512" height="512"></canvas>
     <script type="module" src="main.js"></script>
 </body>
 

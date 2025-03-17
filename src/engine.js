@@ -1,15 +1,18 @@
-import { vec3, mat4 } from "https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/+esm";
+import { vec3, mat4 } from "gl-matrix";
 import { updateUI } from "./ui.js";
-import { setup, loadShaders, setupBuffers, createPostProcessResources, createRenderTextureViews, createDepthTexture } from "./setup.js";
+import { setup, loadShaders } from "./setup.js";
 import { Scene } from "./scene.js"
+import { createPostProcessResources } from "./utils.js";
 import { setupUI } from "./ui.js"
 import { createPipeline } from "./pipeline.js"
 import { createBindLayouts } from "./bind-layouts.js";
 import { updateCamera } from "./movement.js"
-import { globals } from "./setup.js";
-import { createRenderPass } from "./utils.js"
+import { globals } from "./globals.js";
 import { WebClient } from "./web-client.js"
 import { GameObject } from "./game-object.js";
+import { creatRenderPasses } from "./renderpass.js"
+import { createRenderTextureViews } from "./render-texture.js"
+import { setupBuffers } from "./buffers.js"
 
 export class Engine {
     async init() {
@@ -21,11 +24,12 @@ export class Engine {
         this.canvas = canvas;
         this.graphicsSettings = new Uint32Array([0, 0, 0, 0]);
 
-        this.renderTextureViews = createRenderTextureViews(this.device, this.canvas, this.canvasFormat);
+        this.renderTextureViews = createRenderTextureViews(this.device, this.canvas, this.canvasFormat, this.context);
         this.shaderModules = await loadShaders(this.device);
-        this.buffers = await setupBuffers(this.device);
+        this.buffers = setupBuffers(this.device);
         this.bindLayouts = createBindLayouts(this.device);
         this.postProcessResources = createPostProcessResources(this.device, this.bindLayouts, this.renderTextureViews, this.buffers);
+        this.renderPasses = creatRenderPasses(this.renderTextureViews);
 
         this.scenesCache = {};
         this.currentSceneName = null;
@@ -34,7 +38,6 @@ export class Engine {
         this.webClient = new WebClient('ws://3.86.154.96:6868', this.scene);
 
         this.pipelines = createPipeline(this.device, canvasFormat, this.shaderModules, this.bindLayouts);
-        this.depthView = await createDepthTexture(this.device, canvas);
 
         this.time = 0;
         setupUI(this.device, this.buffers);
@@ -47,8 +50,11 @@ export class Engine {
             }
 
             this.update(this.device, this.buffers, this.modelViewProjectionMatrix);
+
             const encoder = this.device.createCommandEncoder();
+            
             this.renderScene(encoder);
+            
             if (globals.graphicsSettings.enableLightSpheres) {
                 this.renderPointLights(encoder);
             }
@@ -101,12 +107,7 @@ export class Engine {
 
         this.scene = null;
     }
-    renderScene(encoder) {
-        const scenePass = createRenderPass(encoder, this.renderTextureViews.sceneTextureView, this.depthView)
-        this.renderSkybox(scenePass);
-        this.renderObjects(scenePass);
-        scenePass.end();
-    }
+
     update() {
         this.time = performance.now() * 0.001;
 
@@ -115,12 +116,12 @@ export class Engine {
 
         this.updatePointLights();
         this.device.queue.writeBuffer(this.buffers.mvpBuffer, 0, this.modelViewProjectionMatrix);
-        this.device.queue.writeBuffer(this.buffers.cameraPositionBuffer, 0, globals.cameraPosition);
+        this.device.queue.writeBuffer(this.buffers.cameraPositionBuffer, 0, globals.camera.cameraPosition);
     }
     updatePointLights() {
         let radius = 10;
         const pointLightCount = this.scene.pointLightObjects.length;
-        if (pointLightCount === 0) return; 
+        if (pointLightCount === 0) return;
 
         const angleStep = (Math.PI * 2) / pointLightCount;
         const positionBuffer = new Float32Array(pointLightCount * 4);
@@ -151,11 +152,16 @@ export class Engine {
 
 
     }
+    renderScene(encoder) {
+        const scenePass = encoder.beginRenderPass(this.renderPasses.scenePass);
+        this.renderSkybox(scenePass);
+        this.renderObjects(scenePass);
+        scenePass.end();
+    }
     renderPointLights(encoder) {
-        const localScene = this.scene;
-        const pointLightPass = createRenderPass(encoder, this.renderTextureViews.sceneTextureView, this.depthView, false, false);
+        const pointLightPass = encoder.beginRenderPass(this.renderPasses.pointLightPass)
         pointLightPass.setPipeline(this.pipelines.pointLightPipeline);
-        for (const model of localScene.pointLightObjects) {
+        for (const model of this.scene.pointLightObjects) {
             model.updateTransform();
             this.device.queue.writeBuffer(model.modelMatrixBuffer, 0, model.modelMatrix);
             pointLightPass.setVertexBuffer(0, model.vertexBuffer);
@@ -181,19 +187,19 @@ export class Engine {
 
     renderBloom(encoder) {
 
-        const bloomPass = createRenderPass(encoder, this.renderTextureViews.bloomTextureView);
+        const bloomPass = encoder.beginRenderPass(this.renderPasses.bloomPass);
         bloomPass.setPipeline(this.pipelines.bloomPipeline);
         bloomPass.setBindGroup(0, this.postProcessResources.bloomBindGroup);
         bloomPass.draw(6);
         bloomPass.end();
 
-        const blurHPass = createRenderPass(encoder, this.renderTextureViews.blurHTextureView);
+        const blurHPass = encoder.beginRenderPass(this.renderPasses.blurHPass);
         blurHPass.setPipeline(this.pipelines.blurHPipeline);
         blurHPass.setBindGroup(0, this.postProcessResources.blurHBindGroup);
         blurHPass.draw(6);
         blurHPass.end();
 
-        const blurVPass = createRenderPass(encoder, this.renderTextureViews.blurVTextureView);
+        const blurVPass = encoder.beginRenderPass(this.renderPasses.blurVPass);
         blurVPass.setPipeline(this.pipelines.blurVPipeline);
         blurVPass.setBindGroup(0, this.postProcessResources.blurVBindGroup);
         blurVPass.draw(6);
@@ -201,7 +207,8 @@ export class Engine {
     }
 
     combinePostProcess(encoder) {
-        const postProcessPass = createRenderPass(encoder, this.context.getCurrentTexture().createView());
+        this.renderPasses.postProcessPass.colorAttachments[0].view = this.context.getCurrentTexture().createView();
+        const postProcessPass = encoder.beginRenderPass(this.renderPasses.postProcessPass);
         postProcessPass.setPipeline(this.pipelines.postProcessPipeline);
         postProcessPass.setBindGroup(0, this.postProcessResources.postProcessBindGroup);
         postProcessPass.draw(6);

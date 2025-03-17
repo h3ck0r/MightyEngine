@@ -115,3 +115,35 @@ canvas {
 #show-menu-btn:hover {
     color: rgb(66, 53, 255);
 }
+
+#exit-button:hover {
+    background-color: #2775c8;
+    color: white;
+    animation: zaduv2_0 2s infinite reverse both;
+}
+
+@keyframes zaduv2_0 {
+    from {
+        transform: scale(0.8) rotate(3600deg);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    to {
+        transform: scale(0.8);
+    }
+}
+#debugCanvas {
+    display: none;
+    width: 200px;
+    height: 200px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    border: 1px solid red;
+}
+.slider-container {
+    align-items: center;
+}
